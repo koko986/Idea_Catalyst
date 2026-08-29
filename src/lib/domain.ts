@@ -1,10 +1,10 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 
-export type Account = "buyer_available" | "buyer_held" | "seller_available" | "platform_clearing";
+export type Account = "user_available" | "order_escrow" | "platform_clearing" | "platform_fee";
 export type Posting = { account: Account; amount: number };
 export type JournalEntry = {
   id: string;
-  kind: "top_up" | "hold" | "release" | "refund" | "fee";
+  kind: "top_up" | "hold" | "release" | "refund" | "fee" | "reversal";
   reference: string;
   createdAt: string;
   postings: Posting[];
@@ -23,11 +23,11 @@ export function createEntry(input: Omit<JournalEntry, "createdAt"> & { createdAt
 
 export type OrderStatus =
   | "funded" | "escrow_held" | "shipped" | "delivered" | "inspecting"
-  | "trial_active" | "confirmed" | "return_review" | "disputed" | "released" | "refunded";
+  | "trial_active" | "confirmed" | "return_review" | "disputed" | "released" | "refunded" | "cancelled";
 
 const transitions: Record<OrderStatus, OrderStatus[]> = {
-  funded: ["escrow_held", "refunded"],
-  escrow_held: ["shipped", "refunded", "disputed"],
+  funded: ["escrow_held", "refunded", "cancelled"],
+  escrow_held: ["shipped", "refunded", "disputed", "cancelled"],
   shipped: ["delivered", "disputed"],
   delivered: ["inspecting", "disputed"],
   inspecting: ["trial_active", "confirmed", "disputed"],
@@ -37,6 +37,7 @@ const transitions: Record<OrderStatus, OrderStatus[]> = {
   disputed: ["released", "refunded"],
   released: [],
   refunded: [],
+  cancelled: [],
 };
 
 export function transitionOrder(current: OrderStatus, next: OrderStatus) {

@@ -25,6 +25,74 @@ test("buyer completes the protected marketplace journey", async ({ page }) => {
   await expect(page.getByRole("button", { name: "Confirmation recorded" })).toBeDisabled();
 });
 
+test("member funds the wallet before escrow checkout", async ({ page }) => {
+  const request = {
+    id: "62f0df95-a609-4d4f-87a2-e2ab01ffbba1",
+    requestNumber: "TP-001001",
+    amountMmk: 2_000_000,
+    transferMethod: "kpay",
+    transferReference: "KP-482916",
+    status: "pending",
+    rejectionReason: null,
+    createdAt: "2026-08-29T07:00:00.000Z",
+  };
+  let submitted = false;
+  await page.route("**/api/wallet", async (route) => {
+    if (route.request().method() === "POST") {
+      submitted = true;
+      await route.fulfill({ status: 201, contentType: "application/json", body: JSON.stringify({ id: request.id, requestNumber: request.requestNumber, status: "pending" }) });
+      return;
+    }
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ availableMmk: 0, heldMmk: 0, requests: submitted ? [request] : [], activity: [] }),
+    });
+  });
+
+  await page.goto("/wallet?amount=2000000");
+  await expect(page.getByRole("heading", { name: "Add money" })).toBeVisible();
+  await page.getByLabel("Transfer method").selectOption("kpay");
+  await page.getByLabel("Transaction reference").fill("KP-482916");
+  await page.getByLabel("Payment receipt").setInputFiles({
+    name: "receipt.png",
+    mimeType: "image/png",
+    buffer: Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=", "base64"),
+  });
+  await page.getByRole("button", { name: "Submit for review" }).click();
+  await expect(page.getByText(/TP-001001 was submitted/)).toBeVisible();
+  await expect(page.getByText("Pending review")).toBeVisible();
+
+  await page.route("**/api/admin/top-ups", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ requests: [{ ...request, userName: "Kyaw Thu", receiptUrl: "https://example.com/receipt", reviewedAt: null }] }),
+    });
+  });
+  await page.route("**/api/admin/top-ups/*", async (route) => {
+    await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ request: { ...request, status: "approved" } }) });
+  });
+  await page.goto("/admin");
+  await page.getByRole("button", { name: "Wallet" }).click();
+  await page.getByRole("button", { name: "Review" }).click();
+  page.once("dialog", (dialog) => dialog.accept());
+  await page.getByRole("button", { name: "Approve and credit" }).click();
+  await expect(page.getByText(/balanced ledger postings created/)).toBeVisible();
+
+  await page.unroute("**/api/wallet");
+  await page.route("**/api/wallet", async (route) => {
+    await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ availableMmk: 2_000_000, heldMmk: 0, requests: [], activity: [] }) });
+  });
+  const orderId = "e257456b-d12b-4d89-9c10-b056234d0350";
+  await page.route("**/api/orders/checkout", async (route) => {
+    await route.fulfill({ status: 201, contentType: "application/json", body: JSON.stringify({ orderId }) });
+  });
+  await page.goto("/marketplace/iphone-13");
+  await page.getByRole("button", { name: "Secure in escrow" }).click();
+  await page.waitForURL(`**/orders/${orderId}`);
+});
+
 test("admin queue exposes immutable evidence history", async ({ page }) => {
   await page.goto("/admin");
   await page.getByRole("button", { name: "Open" }).first().click();
