@@ -1,17 +1,19 @@
 import { LoginForm } from "@/components/login-form";
-import { getDemoAdminCredentials } from "@/lib/auth/config";
+import { getDemoCredentials } from "@/lib/auth/config";
+import { MIN_PASSWORD_LENGTH } from "@/lib/auth/password";
 
 export default function LoginPage() {
-  const admin = getDemoAdminCredentials();
+  const demo = getDemoCredentials();
 
   return (
     <main className="page login-page">
       <div className="eyebrow" style={{ textAlign: "center" }}>
-        MVP demo access
+        Account access
       </div>
       <LoginForm
-        adminEmail={admin.email}
-        adminPassword={admin.password}
+        admin={demo.admin}
+        user={demo.user}
+        minPasswordLength={MIN_PASSWORD_LENGTH}
       />
     </main>
   );

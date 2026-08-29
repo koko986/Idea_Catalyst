@@ -5,7 +5,7 @@ A mobile-first, trust-centered second-hand marketplace PWA for Myanmar. PyanThit
 ## What is implemented
 
 - Responsive Next.js 16 marketplace, listing, seller, order, chat, wallet, rewards, trust, and admin experiences
-- MVP email login with a signed session, one admin role, and no email delivery
+- Password-based accounts with self-registration, a seeded admin, and signed sessions
 - Private identity and transaction evidence model with masked identifiers and retention metadata
 - Immutable double-entry domain rules and Postgres ledger tables
 - Transactional order states for 24-hour inspection, configurable 48-hour trials, returns, arbitration, refund, and dual-confirmed release
@@ -32,7 +32,16 @@ npm run dev
 
 The product UI runs with safe demo data when Supabase and AI Gateway credentials are absent. Server mutations that require durable identity, evidence, or tokens fail closed until services are configured.
 
-For the MVP, members can sign in with any made-up valid email address; no email is sent. The single default admin account is `admin@retrust.demo` / `Admin123!`. Override the `MVP_ADMIN_*` values and set a random `MVP_SESSION_SECRET` in `.env.local`. This intentionally low-friction login does not prove ownership of an email address and must be replaced with managed authentication before production.
+Accounts are real: an email and password create a stored account you can sign back into, with passwords hashed using scrypt and a signed HTTP-only session cookie. Two accounts are seeded on first run:
+
+| Role | Email | Password |
+| --- | --- | --- |
+| Administrator | `admin@pyanthit.demo` | `Admin123!` |
+| User | `user@pyanthit.demo` | `User123!` |
+
+Anyone else can self-register from the login page under "Create an account". Override the `MVP_ADMIN_*` / `MVP_USER_*` values and set a random `MVP_SESSION_SECRET` in `.env.local`.
+
+Accounts are stored in `.data/accounts.json` (path configurable with `MVP_ACCOUNTS_FILE`), which persists for local and single-instance Node deployments but **not** on serverless hosts with ephemeral filesystems. Email addresses are never verified. Move to Supabase Auth or another managed provider, and add email verification and password recovery, before production.
 
 To run Supabase locally:
 

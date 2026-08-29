@@ -3,7 +3,7 @@ import "server-only";
 import { jwtVerify, SignJWT } from "jose";
 import { MVP_SESSION_SECRET } from "@/lib/auth/config";
 
-export const SESSION_COOKIE = "retrust_mvp_session";
+export const SESSION_COOKIE = "pyanthit_session";
 export const SESSION_DURATION_SECONDS = 60 * 60 * 24 * 7;
 
 export type SessionRole = "admin" | "member";
@@ -11,6 +11,8 @@ export type SessionRole = "admin" | "member";
 export type Session = {
   userId: string;
   role: SessionRole;
+  email: string;
+  name: string;
   initials: string;
 };
 
@@ -37,6 +39,8 @@ export async function verifySessionToken(
     if (
       typeof payload.userId !== "string" ||
       (payload.role !== "admin" && payload.role !== "member") ||
+      typeof payload.email !== "string" ||
+      typeof payload.name !== "string" ||
       typeof payload.initials !== "string"
     ) {
       return null;
@@ -45,6 +49,8 @@ export async function verifySessionToken(
     return {
       userId: payload.userId,
       role: payload.role,
+      email: payload.email,
+      name: payload.name,
       initials: payload.initials,
     };
   } catch {

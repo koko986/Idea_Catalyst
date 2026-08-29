@@ -1,14 +1,8 @@
 import Link from "next/link";
 import Image from "next/image";
-import {
-  Home,
-  LogOut,
-  MessageCircle,
-  Package,
-  Plus,
-  Wallet,
-} from "lucide-react";
+import { Home, LogOut, MessageCircle, Package, Plus, Wallet } from "lucide-react";
 import { logout } from "@/app/login/actions";
+import { AccountMenu } from "@/components/account-menu";
 import { getSession } from "@/lib/auth/session";
 
 const links = [
@@ -52,9 +46,11 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
         </nav>
         {session ? (
           <div className="account-actions">
-            <Link href="/profile" className="avatar" aria-label="Open profile">
-              {session.initials}
-            </Link>
+            <AccountMenu
+              email={session.email}
+              initials={session.initials}
+              roleLabel={session.role === "admin" ? "Administrator" : "User"}
+            />
             <form action={logout}>
               <button className="btn btn-quiet signout-button" type="submit">
                 <LogOut size={16} />

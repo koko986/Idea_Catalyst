@@ -1,87 +1,115 @@
 "use server";
 
-import { createHash, timingSafeEqual } from "node:crypto";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import {
-  DEMO_ADMIN_EMAIL,
-  DEMO_ADMIN_PASSWORD,
-} from "@/lib/auth/config";
+  authenticate,
+  createAccount,
+  getAccountInitials,
+  type Account,
+} from "@/lib/auth/accounts";
+import { MIN_PASSWORD_LENGTH } from "@/lib/auth/password";
 import { createSession, deleteSession } from "@/lib/auth/session";
-import type { SessionRole } from "@/lib/auth/token";
 
 export type LoginState = {
   error?: string;
 };
 
-const loginSchema = z.object({
-  email: z.email("Enter a valid email address.").transform((value) =>
-    value.trim().toLowerCase(),
-  ),
+const signInSchema = z.object({
+  email: z.email("Enter a valid email address."),
+  password: z.string().min(1, "Enter your password."),
   mode: z.enum(["member", "admin"]),
-  password: z.string().optional(),
 });
 
-function matchesSecret(value: string, expected: string) {
-  const supplied = Buffer.from(value);
-  const configured = Buffer.from(expected);
-  return (
-    supplied.length === configured.length &&
-    timingSafeEqual(supplied, configured)
-  );
+const signUpSchema = z
+  .object({
+    email: z.email("Enter a valid email address."),
+    displayName: z.string().trim().max(60).optional(),
+    password: z
+      .string()
+      .min(
+        MIN_PASSWORD_LENGTH,
+        `Use a password of at least ${MIN_PASSWORD_LENGTH} characters.`,
+      ),
+    confirmPassword: z.string(),
+  })
+  .refine((values) => values.password === values.confirmPassword, {
+    message: "Both passwords must match.",
+    path: ["confirmPassword"],
+  });
+
+async function startSession(account: Account) {
+  await createSession({
+    userId: account.id,
+    role: account.role,
+    email: account.email,
+    name: account.displayName,
+    initials: getAccountInitials(account),
+  });
 }
 
-function getInitials(email: string, role: SessionRole) {
-  if (role === "admin") return "AD";
-
-  const localPart = email.split("@")[0] || "member";
-  const chunks = localPart.split(/[._-]+/).filter(Boolean);
-  const letters =
-    chunks.length > 1
-      ? `${chunks[0][0]}${chunks[1][0]}`
-      : localPart.slice(0, 2);
-  return letters.toUpperCase();
+function landingPath(account: Account) {
+  return account.role === "admin" ? "/admin" : "/marketplace";
 }
 
-export async function login(
-  _previousState: LoginState,
-  formData: FormData,
-): Promise<LoginState> {
-  const parsed = loginSchema.safeParse({
+async function signIn(formData: FormData): Promise<LoginState> {
+  const parsed = signInSchema.safeParse({
     email: formData.get("email"),
-    password: formData.get("password") || undefined,
+    password: formData.get("password"),
     mode: formData.get("mode"),
   });
 
   if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message || "Check your details." };
+  }
+
+  const { email, password, mode } = parsed.data;
+  const account = await authenticate(email, password);
+
+  if (!account) {
+    return { error: "That email and password combination is not recognised." };
+  }
+
+  if (mode === "admin" && account.role !== "admin") {
+    return { error: "This account does not have administrator access." };
+  }
+
+  await startSession(account);
+  redirect(landingPath(account));
+}
+
+async function signUp(formData: FormData): Promise<LoginState> {
+  const parsed = signUpSchema.safeParse({
+    email: formData.get("email"),
+    displayName: formData.get("displayName") || undefined,
+    password: formData.get("password"),
+    confirmPassword: formData.get("confirmPassword"),
+  });
+
+  if (!parsed.success) {
     return {
-      error: parsed.error.issues[0]?.message || "Check your login details.",
+      error: parsed.error.issues[0]?.message || "Check your account details.",
     };
   }
 
-  const { email, mode, password = "" } = parsed.data;
-  let role: SessionRole = "member";
+  const { email, password, displayName } = parsed.data;
+  const result = await createAccount({ email, password, displayName });
 
-  if (mode === "admin") {
-    if (
-      email !== DEMO_ADMIN_EMAIL ||
-      !matchesSecret(password, DEMO_ADMIN_PASSWORD)
-    ) {
-      return { error: "The admin email or password is incorrect." };
-    }
-    role = "admin";
-  } else if (email === DEMO_ADMIN_EMAIL) {
-    return { error: "Use the Admin tab for the admin account." };
+  if ("error" in result) {
+    return { error: result.error };
   }
 
-  const userId = createHash("sha256").update(email).digest("hex");
-  await createSession({
-    userId,
-    role,
-    initials: getInitials(email, role),
-  });
+  await startSession(result.account);
+  redirect(landingPath(result.account));
+}
 
-  redirect(role === "admin" ? "/admin" : "/marketplace");
+export async function submitLogin(
+  _previousState: LoginState,
+  formData: FormData,
+): Promise<LoginState> {
+  return formData.get("intent") === "signup"
+    ? signUp(formData)
+    : signIn(formData);
 }
 
 export async function logout() {

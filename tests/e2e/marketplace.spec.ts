@@ -1,9 +1,11 @@
 import { expect, test, type Page } from "@playwright/test";
 import sharp from "sharp";
 
+const DEMO_USER = { email: "user@pyanthit.demo", password: "User123!" };
+const DEMO_ADMIN = { email: "admin@pyanthit.demo", password: "Admin123!" };
+
 async function loginAsMember(page: Page) {
   await page.goto("/login");
-  await page.getByLabel("Email address").fill("buyer@example.test");
   await page.getByRole("button", { name: "Sign in as user" }).click();
   await expect(page).toHaveURL(/\/marketplace$/);
 }
@@ -15,16 +17,20 @@ async function loginAsAdmin(page: Page) {
   await expect(page).toHaveURL(/\/admin$/);
 }
 
-test("MVP login requires a session and accepts a made-up email", async ({
-  page,
-}) => {
+test("signing in requires a real account password", async ({ page }) => {
   await page.goto("/marketplace");
   await expect(page).toHaveURL(/\/login$/);
-  await expect(page.getByText(/No message is sent/)).toBeVisible();
   await expect(page.getByRole("tab", { name: "User" })).toBeVisible();
   await expect(page.getByRole("tab", { name: "Admin" })).toBeVisible();
 
-  await page.getByLabel("Email address").fill("demo.user@example.test");
+  await page.getByLabel("Email address").fill("nobody@example.test");
+  await page.getByLabel("Password", { exact: true }).fill("WrongPassword1");
+  await page.getByRole("button", { name: "Sign in as user" }).click();
+  await expect(page.getByText(/is not recognised/)).toBeVisible();
+  await expect(page).toHaveURL(/\/login$/);
+
+  await page.getByLabel("Email address").fill(DEMO_USER.email);
+  await page.getByLabel("Password", { exact: true }).fill(DEMO_USER.password);
   await page.getByRole("button", { name: "Sign in as user" }).click();
   await expect(page).toHaveURL(/\/marketplace$/);
 
@@ -32,18 +38,59 @@ test("MVP login requires a session and accepts a made-up email", async ({
   await expect(page).toHaveURL(/\/marketplace$/);
 });
 
-test("admin credentials appear only after choosing the Admin role", async ({
+test("a new account can be created and reused after signing out", async ({
   page,
 }) => {
+  const email = `shopper.${Date.now()}@example.test`;
+
   await page.goto("/login");
-  await expect(page.getByText("Demo admin account")).toHaveCount(0);
+  await page.getByRole("button", { name: "Create an account" }).click();
+  await page.getByLabel("Display name").fill("Nilar Aung");
+  await page.getByLabel("Email address").fill(email);
+  await page.getByLabel("Password", { exact: true }).fill("Str0ngPassword");
+  await page.getByLabel("Confirm password").fill("Str0ngPassword");
+  await page.getByRole("button", { name: "Create account" }).click();
+  await expect(page).toHaveURL(/\/marketplace$/);
 
+  await page.getByRole("button", { name: "Sign out" }).click();
+  await expect(page).toHaveURL(/\/login$/);
+
+  await page.getByLabel("Email address").fill(email);
+  await page.getByLabel("Password", { exact: true }).fill("Str0ngPassword");
+  await page.getByRole("button", { name: "Sign in as user" }).click();
+  await expect(page).toHaveURL(/\/marketplace$/);
+  await expect(page.getByRole("button", { name: /Account menu/ })).toContainText(
+    email,
+  );
+});
+
+test("a user account is refused administrator access", async ({ page }) => {
+  await page.goto("/login");
   await page.getByRole("tab", { name: "Admin" }).click();
-  await expect(page.getByText("Demo admin account")).toBeVisible();
-  await expect(page.getByText("admin@retrust.demo")).toBeVisible();
+  await page.getByLabel("Email address").fill(DEMO_USER.email);
+  await page.getByLabel("Password", { exact: true }).fill(DEMO_USER.password);
+  await page.getByRole("button", { name: "Sign in as admin" }).click();
 
-  await page.getByRole("tab", { name: "User" }).click();
-  await expect(page.getByText("Demo admin account")).toHaveCount(0);
+  await expect(
+    page.getByText(/does not have administrator access/),
+  ).toBeVisible();
+  await expect(page).toHaveURL(/\/login$/);
+});
+
+test("the account menu offers sign out and switch account", async ({ page }) => {
+  await loginAsAdmin(page);
+
+  await page.getByRole("button", { name: /Account menu/ }).click();
+  await expect(page.getByRole("menu")).toContainText(DEMO_ADMIN.email);
+  await expect(page.getByRole("menu")).toContainText("Administrator");
+  await expect(
+    page.getByRole("menuitem", { name: "Switch account" }),
+  ).toBeVisible();
+
+  await page.getByRole("menuitem", { name: "Sign out" }).click();
+  await expect(page).toHaveURL(/\/login$/);
+  await page.goto("/admin");
+  await expect(page).toHaveURL(/\/login$/);
 });
 
 test("buyer completes the protected marketplace journey", async ({ page }) => {
