@@ -1,7 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { BadgeCheck, CheckCircle2, Clock3, RefreshCcw, Tag, UserRoundCheck, XCircle } from "lucide-react";
+import { buyerThreadId } from "@/lib/chat";
 import { money } from "@/lib/data";
 import {
   cancelSelection,
@@ -83,6 +85,7 @@ export function OfferRoom() {
                   <button className="btn btn-primary" onClick={()=>choose(offer.id)}><UserRoundCheck size={16}/> Choose buyer</button>
                 </div>}
                 {offer.status==="selected" && <span className="muted"><Clock3 size={15} style={{display:"inline"}}/> Awaiting buyer confirmation</span>}
+                <Link className="btn btn-quiet" href={`/chat/${buyerThreadId(offer.id)}`}>Message</Link>
               </div>
             </article>
           ))}

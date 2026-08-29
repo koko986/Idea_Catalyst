@@ -1,47 +1,110 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
-import { Home, LogOut, MessageCircle, Package, Plus, Wallet } from "lucide-react";
+import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
+import {
+  BadgeCheck,
+  Gift,
+  Home,
+  LogOut,
+  Menu,
+  MessageCircle,
+  Package,
+  Plus,
+  ShieldCheck,
+  Tag,
+  UserRound,
+  Wallet,
+  X,
+} from "lucide-react";
 import { logout } from "@/app/login/actions";
 import { AccountMenu } from "@/components/account-menu";
-import { getSession } from "@/lib/auth/session";
+import { useConversations } from "@/components/use-conversations";
 
-const links = [
+type ShellSession = {
+  email: string;
+  name: string;
+  initials: string;
+  role: "admin" | "member";
+};
+
+const primaryLinks = [
   ["Marketplace", "/marketplace"],
   ["Sell", "/sell"],
   ["Offers", "/offers"],
-  ["Chat", "/chat"],
   ["Orders", "/orders"],
   ["Wallet", "/wallet"],
   ["Trust", "/trust"],
   ["Admin", "/admin"],
-];
+] as const;
 
-export async function AppShell({ children }: { children: React.ReactNode }) {
-  const session = await getSession();
-  const visibleLinks = links.filter(
+const sideLinks = [
+  [MessageCircle, "Chat", "/chat"],
+  [Tag, "Offers", "/offers"],
+  [Package, "Orders", "/orders"],
+  [Wallet, "Wallet", "/wallet"],
+  [Gift, "Rewards", "/rewards"],
+  [ShieldCheck, "Trust", "/trust"],
+  [UserRound, "Admin", "/admin"],
+] as const;
+
+export function AppShell({
+  children,
+  session,
+}: {
+  children: React.ReactNode;
+  session: ShellSession | null;
+}) {
+  const pathname = usePathname();
+  const [openPath, setOpenPath] = useState<string | null>(null);
+  const open = openPath === pathname;
+  const conversations = useConversations();
+  const visiblePrimary = primaryLinks.filter(
     ([label]) => label !== "Admin" || session?.role === "admin",
   );
+  const visibleSide = sideLinks.filter(
+    ([, label]) => label !== "Admin" || session?.role === "admin",
+  );
+
+  useEffect(() => {
+    document.body.style.overflow = open ? "hidden" : "";
+    function onKey(event: KeyboardEvent) {
+      if (event.key === "Escape") setOpenPath(null);
+    }
+    if (open) window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = "";
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
 
   return (
     <div className="shell">
       <header className="topbar">
-        <Link href="/" className="brand" aria-label="PyanThit home">
-          <Image
-            className="brandmark"
-            src="/pyanthit-icon.png"
-            alt=""
-            width={40}
-            height={40}
-            priority
-          />
-          PyanThit
-        </Link>
+        <div className="topbar-left">
+          {session && (
+            <button className="menu-toggle" type="button" aria-label="Open menu" aria-expanded={open} onClick={() => setOpenPath(pathname)}>
+              <Menu size={22}/>
+            </button>
+          )}
+          <Link href="/" className="brand" aria-label="PyanThit home">
+            <Image
+              className="brandmark"
+              src="/pyanthit-icon.png"
+              alt=""
+              width={40}
+              height={40}
+              priority
+            />
+            PyanThit
+          </Link>
+        </div>
         <nav className="nav" aria-label="Primary navigation">
           {session &&
-            visibleLinks.map(([label, href]) => (
-              <Link key={href} href={href}>
-                {label}
-              </Link>
+            visiblePrimary.map(([label, href]) => (
+              <Link key={href} href={href}>{label}</Link>
             ))}
         </nav>
         {session ? (
@@ -64,29 +127,52 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
           </Link>
         )}
       </header>
+      {session && open && (
+        <>
+          <button className="drawer-backdrop" type="button" aria-label="Close menu" onClick={() => setOpenPath(null)}/>
+          <aside className="drawer" role="dialog" aria-modal="true" aria-label="Side menu">
+            <div className="drawer-head">
+              <Link href="/profile" className="drawer-profile" onClick={() => setOpenPath(null)}>
+                <span className="avatar" style={{width:52,height:52}}>{session.initials}</span>
+                <span>
+                  <strong>{session.name}</strong>
+                  <span className="muted" style={{display:"flex",alignItems:"center",gap:4,marginTop:4}}>
+                    <BadgeCheck size={14}/> View profile
+                  </span>
+                </span>
+              </Link>
+              <button className="menu-toggle" type="button" aria-label="Close menu" onClick={() => setOpenPath(null)}>
+                <X size={20}/>
+              </button>
+            </div>
+            <nav className="drawer-nav" aria-label="Side menu">
+              {visibleSide.map(([Icon, label, href]) => (
+                <Link key={href + label} href={href} className={pathname === href || pathname.startsWith(`${href}/`) ? "active" : undefined} onClick={() => setOpenPath(null)}>
+                  <Icon size={18}/>
+                  <span>{label}</span>
+                  {label === "Chat" && conversations.length > 0 && (
+                    <span className="menu-count">{conversations.length}</span>
+                  )}
+                </Link>
+              ))}
+              <form action={logout}>
+                <button className="drawer-signout" type="submit">
+                  <LogOut size={18}/>
+                  <span>Sign out</span>
+                </button>
+              </form>
+            </nav>
+          </aside>
+        </>
+      )}
       {children}
       {session && (
         <nav className="bottom-nav" aria-label="Mobile navigation">
-          <Link href="/">
-            <Home size={19} />
-            <span>Home</span>
-          </Link>
-          <Link href="/marketplace">
-            <Package size={19} />
-            <span>Shop</span>
-          </Link>
-          <Link href="/sell">
-            <Plus size={19} />
-            <span>Sell</span>
-          </Link>
-          <Link href="/chat">
-            <MessageCircle size={19} />
-            <span>Chat</span>
-          </Link>
-          <Link href="/wallet">
-            <Wallet size={19} />
-            <span>Wallet</span>
-          </Link>
+          <Link href="/"><Home size={19}/><span>Home</span></Link>
+          <Link href="/marketplace"><Package size={19}/><span>Shop</span></Link>
+          <Link href="/sell"><Plus size={19}/><span>Sell</span></Link>
+          <Link href="/wallet"><Wallet size={19}/><span>Wallet</span></Link>
+          <Link href="/profile"><UserRound size={19}/><span>Account</span></Link>
         </nav>
       )}
     </div>
