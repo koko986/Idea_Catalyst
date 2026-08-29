@@ -140,6 +140,79 @@
   border-color: var(--lime);
 }
 
+.exports {
+  padding: 90px 0 20px;
+}
+
+.exportHeading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 40px;
+  margin-bottom: 30px;
+}
+
+.exportHeading h2 {
+  margin: 14px 0 0;
+  font-size: clamp(36px, 5vw, 62px);
+  line-height: 0.95;
+  letter-spacing: -0.06em;
+}
+
+.exportHeading > p {
+  max-width: 470px;
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.exportGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.exportCard {
+  min-height: 260px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 24px;
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+}
+
+.exportMeta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  color: var(--brand);
+  font: 800 12px/1 var(--font-geist-mono), monospace;
+}
+
+.exportCard h3 {
+  margin: 40px 0 8px;
+  font-size: 24px;
+}
+
+.exportCard p {
+  margin-bottom: 24px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.exportCard a {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: auto;
+  color: var(--brand);
+  font-size: 13px;
+  font-weight: 850;
+}
+
 .handoff {
   display: grid;
   grid-template-columns: minmax(300px, 0.78fr) minmax(0, 1fr);
@@ -237,6 +310,15 @@
   .handoff {
     grid-template-columns: 1fr;
     gap: 34px;
+  }
+
+  .exportHeading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .exportGrid {
+    grid-template-columns: 1fr;
   }
 
   .intro h1,

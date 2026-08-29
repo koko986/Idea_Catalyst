@@ -32,6 +32,30 @@ const demoSteps = [
   },
 ];
 
+const videoExports = [
+  {
+    title: "Problem opener",
+    duration: "00:55",
+    description: "Cinematic setup for a live stage demo.",
+    href: "/presentation/pyanthit-problem-story.mp4",
+    fileName: "PyanThit-problem-story.mp4",
+  },
+  {
+    title: "Full product demo",
+    duration: "02:18",
+    description: "Narrated walkthrough of every core product flow.",
+    href: "/presentation/pyanthit-full-product-demo.mp4",
+    fileName: "PyanThit-full-product-demo.mp4",
+  },
+  {
+    title: "Hackathon presentation",
+    duration: "03:14",
+    description: "Problem story and complete solution in one upload-ready cut.",
+    href: "/presentation/pyanthit-hackathon-presentation.mp4",
+    fileName: "PyanThit-hackathon-presentation.mp4",
+  },
+];
+
 export default function PresentationPage() {
   return (
     <main className={styles.presentation}>
@@ -86,6 +110,31 @@ export default function PresentationPage() {
           >
             <Download size={16} /> Download MP4
           </a>
+        </div>
+      </section>
+
+      <section className={styles.exports} aria-labelledby="video-exports-heading">
+        <div className={styles.exportHeading}>
+          <div>
+            <div className={styles.kicker}><span /> Presentation files</div>
+            <h2 id="video-exports-heading">Ready for the stage.<br />Ready to upload.</h2>
+          </div>
+          <p>All exports are 1080p MP4 files with AI narration, original music, and presentation-safe pacing.</p>
+        </div>
+        <div className={styles.exportGrid}>
+          {videoExports.map((video) => (
+            <article className={styles.exportCard} key={video.title}>
+              <div className={styles.exportMeta}>
+                <Play size={17} fill="currentColor" />
+                <span>{video.duration}</span>
+              </div>
+              <h3>{video.title}</h3>
+              <p>{video.description}</p>
+              <a href={video.href} download={video.fileName}>
+                <Download size={16} /> Download MP4
+              </a>
+            </article>
+          ))}
         </div>
       </section>
 

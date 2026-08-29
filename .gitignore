@@ -4,6 +4,7 @@
 /coverage
 /test-results
 /playwright-report
+/.demo-recording
 /.env*
 !.env.example
 *.tsbuildinfo
