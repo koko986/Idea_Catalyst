@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import sharp from "sharp";
 import { createClient } from "@/lib/supabase/server";
+import { perceptualHash } from "@/lib/image-similarity";
 
 export const runtime = "nodejs";
 
@@ -11,7 +12,12 @@ function escapeXml(value: string) {
 }
 
 export async function POST(request: Request) {
-  const form = await request.formData();
+  let form: FormData;
+  try {
+    form = await request.formData();
+  } catch {
+    return Response.json({ error: "Expected a multipart image upload" }, { status: 400 });
+  }
   const file = form.get("image");
   if (!(file instanceof File)) return Response.json({ error: "An image is required" }, { status: 400 });
   if (!["image/jpeg", "image/png", "image/webp"].includes(file.type) || file.size > 20 * 1024 * 1024) {
@@ -30,6 +36,7 @@ export async function POST(request: Request) {
   }
   const date = new Date().toISOString().slice(0, 10);
   const input = Buffer.from(await file.arrayBuffer());
+  const imageHash = await perceptualHash(input);
   const normalized = await sharp(input).rotate().resize({ width: 1600, withoutEnlargement: true }).toBuffer({ resolveWithObject: true });
   const label = `ReTrust · @${sellerName} · ${date}`;
   const overlay = Buffer.from(`
@@ -55,6 +62,7 @@ export async function POST(request: Request) {
       "Content-Disposition": `inline; filename="retrust-${date}.webp"`,
       "X-ReTrust-Seller": sellerName,
       "X-ReTrust-Date": date,
+      "X-ReTrust-Perceptual-Hash": imageHash,
       "Cache-Control": "private, no-store",
     },
   });

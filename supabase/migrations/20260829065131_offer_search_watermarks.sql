@@ -120,6 +120,40 @@ grant execute on function public.confirm_selected_offer(uuid) to authenticated;
 grant execute on function public.cancel_offer_selection(uuid) to authenticated;
 grant execute on function public.expire_offer_selection(uuid) to authenticated;
 
+create or replace function private.expire_stale_offer_selections()
+returns integer language plpgsql security definer set search_path='' as $$
+declare expired_count integer;
+begin
+  with expired as (
+    select listing_id,id from public.offers
+    where status='selected' and confirmation_deadline <= now()
+    for update
+  ), expire_chosen as (
+    update public.offers o set status='expired'
+    from expired e where o.id=e.id returning o.listing_id,o.id
+  ), reopen_waiting as (
+    update public.offers o set status='active'
+    where o.status='waiting' and o.listing_id in (select listing_id from expired)
+  ), reopen_listings as (
+    update public.listings l set selected_offer_id=null,status='active'
+    where l.id in (select listing_id from expired)
+  )
+  insert into public.audit_logs(actor_id,action,entity_type,entity_id,after_data)
+    select null,'offer.selection_released','listing',listing_id::text,jsonb_build_object('reason','expired','offer_id',id)
+    from expire_chosen;
+  get diagnostics expired_count = row_count;
+  return expired_count;
+end;
+$$;
+revoke all on function private.expire_stale_offer_selections() from public,anon,authenticated;
+
+create extension if not exists pg_cron with schema pg_catalog;
+select cron.schedule(
+  'expire-stale-offer-selections',
+  '*/5 * * * *',
+  'select private.expire_stale_offer_selections()'
+);
+
 insert into storage.buckets (id,name,public,file_size_limit,allowed_mime_types)
 values ('listing-watermarked','listing-watermarked',true,20971520,array['image/webp'])
 on conflict (id) do update set public=true;

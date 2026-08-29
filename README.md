@@ -11,6 +11,9 @@ A mobile-first, trust-centered second-hand marketplace PWA for Myanmar. ReTrust 
 - Transactional order states for 24-hour inspection, configurable 48-hour trials, returns, arbitration, refund, and dual-confirmed release
 - Shipment evidence for product, package, order label, and capture timestamp
 - AI Gateway adapter for conservative NRC/photo/condition signals with a mandatory human-review fallback
+- Dynamic listing-photo derivatives stamped with the authenticated seller name and upload date while originals remain private
+- English/Myanmar Unicode keyword matching, condition/transaction/credibility/bargain filters, and photo similarity search using perceptual hashes with AI enrichment
+- Multi-buyer offers, seller counters/discounts, one-buyer selection, waiting queues, bilateral cancellation, and automatic 24-hour reopening
 - Deterministic chat blocks for external links, contact scraping, wallet requests, and off-platform negotiation
 - IMEI checksum and uniqueness controls with an external registry adapter
 - Signed, expiring, single-use handover token architecture and QR pickup UI
