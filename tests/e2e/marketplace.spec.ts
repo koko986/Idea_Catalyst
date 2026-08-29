@@ -1,7 +1,37 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 import sharp from "sharp";
 
+async function loginAsMember(page: Page) {
+  await page.goto("/login");
+  await page.getByLabel("Email address").fill("buyer@example.test");
+  await page.getByRole("button", { name: "Continue" }).click();
+  await expect(page).toHaveURL(/\/marketplace$/);
+}
+
+async function loginAsAdmin(page: Page) {
+  await page.goto("/login");
+  await page.getByRole("tab", { name: "Admin" }).click();
+  await page.getByRole("button", { name: "Continue" }).click();
+  await expect(page).toHaveURL(/\/admin$/);
+}
+
+test("MVP login requires a session and accepts a made-up email", async ({
+  page,
+}) => {
+  await page.goto("/marketplace");
+  await expect(page).toHaveURL(/\/login$/);
+  await expect(page.getByText(/No message is sent/)).toBeVisible();
+
+  await page.getByLabel("Email address").fill("demo.user@example.test");
+  await page.getByRole("button", { name: "Continue" }).click();
+  await expect(page).toHaveURL(/\/marketplace$/);
+
+  await page.goto("/admin");
+  await expect(page).toHaveURL(/\/marketplace$/);
+});
+
 test("buyer completes the protected marketplace journey", async ({ page }) => {
+  await loginAsMember(page);
   await page.goto("/marketplace");
   await expect(page.getByRole("heading", { name: /Find your next good thing/ })).toBeVisible();
   await page.getByRole("button", { name: "Phones" }).click();
@@ -26,6 +56,7 @@ test("buyer completes the protected marketplace journey", async ({ page }) => {
 });
 
 test("admin queue exposes immutable evidence history", async ({ page }) => {
+  await loginAsAdmin(page);
   await page.goto("/admin");
   await page.getByRole("button", { name: "Open" }).first().click();
   await expect(page.getByText("Immutable audit timeline")).toBeVisible();
@@ -35,6 +66,7 @@ test("admin queue exposes immutable evidence history", async ({ page }) => {
 });
 
 test("bilingual, attribute, and photo search narrow listings", async ({ page }) => {
+  await loginAsMember(page);
   await page.goto("/marketplace");
   const search = page.getByPlaceholder("Search in English or မြန်မာ Unicode…");
   await search.fill("ဖုန်း");
@@ -64,6 +96,7 @@ test("bilingual, attribute, and photo search narrow listings", async ({ page }) 
 });
 
 test("seller selection reopens waiting buyers after expiry or cancellation", async ({ page }) => {
+  await loginAsMember(page);
   await page.goto("/offers");
   const nway = page.locator("article").filter({ hasText: "Nway Oo" });
   await nway.getByRole("button", { name: "Choose buyer" }).click();
@@ -80,6 +113,7 @@ test("seller selection reopens waiting buyers after expiry or cancellation", asy
 });
 
 test("seller receives a dynamically watermarked photo derivative", async ({ page }) => {
+  await loginAsMember(page);
   const source = await sharp({ create: { width: 400, height: 300, channels: 3, background: "#4d7c5c" } }).png().toBuffer();
   await page.goto("/sell");
   await page.getByRole("button", { name: "2. Evidence" }).click();

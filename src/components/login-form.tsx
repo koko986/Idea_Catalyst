@@ -1,18 +1,131 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
-import { ArrowRight, BadgeCheck, Phone, ShieldCheck } from "lucide-react";
+import { useActionState, useState } from "react";
+import {
+  ArrowRight,
+  BadgeCheck,
+  KeyRound,
+  Mail,
+  ShieldCheck,
+  UserRoundCog,
+} from "lucide-react";
+import { login, type LoginState } from "@/app/login/actions";
 
-export function LoginForm() {
-  const [sent,setSent]=useState(false);
-  const [done,setDone]=useState(false);
-  return <div className="card" style={{maxWidth:470,margin:"30px auto"}}>
-    <div className="iconbox">{done?<BadgeCheck size={21}/>:<Phone size={21}/>}</div>
-    <h2 style={{marginTop:18}}>{done?"Welcome back":"Sign in with your phone"}</h2>
-    {!done?<><p className="muted">Your NRC verifies trust; it is never used as a password. We send a one-time code to your bound mobile.</p>
-      {!sent?<div className="field"><label>Myanmar mobile number</label><input className="input" defaultValue="+95 "/><button className="btn btn-primary" onClick={()=>setSent(true)}>Send secure code <ArrowRight size={16}/></button></div>:
-      <div className="field"><label>6-digit verification code</label><input className="input" inputMode="numeric" maxLength={6} defaultValue="482916"/><button className="btn btn-primary" onClick={()=>setDone(true)}>Verify and sign in</button><button className="btn btn-quiet" onClick={()=>setSent(false)}>Use another number</button></div>}</>:
-      <><div className="trust-banner"><ShieldCheck size={22}/><div><strong>Identity + phone verified</strong><div className="muted">Session protected</div></div></div><Link href="/marketplace" className="btn btn-primary" style={{width:"100%",marginTop:16}}>Continue to marketplace</Link></>}
-  </div>;
+const initialState: LoginState = {};
+
+type LoginFormProps = {
+  adminEmail: string;
+  adminPassword: string;
+};
+
+export function LoginForm({
+  adminEmail,
+  adminPassword,
+}: LoginFormProps) {
+  const [mode, setMode] = useState<"member" | "admin">("member");
+  const [state, formAction, pending] = useActionState(login, initialState);
+
+  return (
+    <div className="card login-card">
+      <div className="iconbox">
+        {mode === "admin" ? <UserRoundCog size={21} /> : <Mail size={21} />}
+      </div>
+      <h2 style={{ marginTop: 18 }}>Sign in to ReTrust</h2>
+      <p className="muted">
+        {mode === "member"
+          ? "Use any made-up email address. No message is sent and no real inbox is needed."
+          : "Use the single demo administrator account below."}
+      </p>
+
+      <div className="tabs" role="tablist" aria-label="Account type">
+        <button
+          className={`tab ${mode === "member" ? "active" : ""}`}
+          type="button"
+          role="tab"
+          aria-selected={mode === "member"}
+          onClick={() => setMode("member")}
+        >
+          Member
+        </button>
+        <button
+          className={`tab ${mode === "admin" ? "active" : ""}`}
+          type="button"
+          role="tab"
+          aria-selected={mode === "admin"}
+          onClick={() => setMode("admin")}
+        >
+          Admin
+        </button>
+      </div>
+
+      {mode === "admin" && (
+        <div className="demo-credentials">
+          <BadgeCheck size={20} />
+          <div>
+            <strong>Demo admin account</strong>
+            <code>{adminEmail}</code>
+            <code>{adminPassword}</code>
+          </div>
+        </div>
+      )}
+
+      <form action={formAction} className="field" style={{ marginTop: 18 }}>
+        <input type="hidden" name="mode" value={mode} />
+        <label htmlFor="email">Email address</label>
+        <div className="input-with-icon">
+          <Mail size={17} />
+          <input
+            className="input"
+            id="email"
+            name="email"
+            type="email"
+            autoComplete="email"
+            defaultValue={
+              mode === "admin" ? adminEmail : "member@example.test"
+            }
+            key={mode}
+            required
+          />
+        </div>
+
+        {mode === "admin" && (
+          <>
+            <label htmlFor="password">Password</label>
+            <div className="input-with-icon">
+              <KeyRound size={17} />
+              <input
+                className="input"
+                id="password"
+                name="password"
+                type="password"
+                autoComplete="current-password"
+                defaultValue={adminPassword}
+                required
+              />
+            </div>
+          </>
+        )}
+
+        {state.error && (
+          <p className="form-error" role="alert" aria-live="polite">
+            {state.error}
+          </p>
+        )}
+
+        <button
+          className="btn btn-primary"
+          type="submit"
+          disabled={pending}
+        >
+          {pending ? "Signing in…" : "Continue"}
+          {!pending && <ArrowRight size={16} />}
+        </button>
+      </form>
+
+      <div className="mvp-note">
+        <ShieldCheck size={18} />
+        <span>MVP demo only — replace this flow before production.</span>
+      </div>
+    </div>
+  );
 }
