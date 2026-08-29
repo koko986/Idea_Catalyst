@@ -32,3 +32,60 @@ test("admin queue exposes immutable evidence history", async ({ page }) => {
   await expect(page.getByText("Automated checks completed")).toBeVisible();
   await expect(page.getByText("Human decision required")).toBeVisible();
 });
+
+test("bilingual, attribute, and photo search narrow listings", async ({ page }) => {
+  await page.goto("/marketplace");
+  const search = page.getByPlaceholder("Search in English or မြန်မာ Unicode…");
+  await search.fill("ဖုန်း");
+  await expect(page.getByText("iPhone 13 · 128 GB")).toBeVisible();
+  await expect(page.getByText("Fujifilm X100V")).toHaveCount(0);
+
+  await search.fill("");
+  await page.getByRole("button", { name: "Filters" }).click();
+  await page.getByLabel("Condition tier").selectOption("Like New");
+  await page.getByLabel("Transaction type").selectOption("SafeZone Locker Pickup");
+  await page.getByLabel("Seller credibility").selectOption("High Response Rate (<15 mins)");
+  await page.getByLabel("Price & bargain").selectOption("Open to Offers");
+  await expect(page.getByText("iPhone 13 · 128 GB")).toBeVisible();
+  await expect(page.getByText("MacBook Air M2")).toHaveCount(0);
+
+  await page.getByLabel("Condition tier").selectOption("All");
+  await page.getByLabel("Transaction type").selectOption("All");
+  await page.getByLabel("Seller credibility").selectOption("All");
+  await page.getByLabel("Price & bargain").selectOption("All");
+  await page.locator('input[type="file"]').setInputFiles({
+    name: "iphone.png",
+    mimeType: "image/png",
+    buffer: Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=", "base64"),
+  });
+  await expect(page.getByText(/similar listings/)).toBeVisible();
+  await expect(page.getByText("iPhone 13 · 128 GB")).toBeVisible();
+});
+
+test("seller selection reopens waiting buyers after expiry or cancellation", async ({ page }) => {
+  await page.goto("/offers");
+  const nway = page.locator("article").filter({ hasText: "Nway Oo" });
+  await nway.getByRole("button", { name: "Choose buyer" }).click();
+  await expect(page.getByText(/Everyone else moved to Waiting/)).toBeVisible();
+  await page.getByRole("button", { name: "Simulate 24h expiry" }).click();
+  await expect(page.getByText(/Waiting buyers are available again/)).toBeVisible();
+
+  const min = page.locator("article").filter({ hasText: "Min Zaw" });
+  await min.getByRole("button", { name: "Choose buyer" }).click();
+  await page.getByRole("button", { name: "Buyer cancels" }).click();
+  await expect(page.getByText(/cancelled by buyer/)).toBeVisible();
+  await expect(nway.getByRole("button", { name: "Choose buyer" })).toBeVisible();
+});
+
+test("seller receives a dynamically watermarked photo derivative", async ({ page }) => {
+  await page.goto("/sell");
+  await page.getByRole("button", { name: "2. Evidence" }).click();
+  await page.locator('input[type="file"]').setInputFiles({
+    name: "phone.png",
+    mimeType: "image/png",
+    buffer: Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAZAAAAEsCAIAAACbnn2RAAADHUlEQVR4nO3BAQ0AAADCoPdPbQ43oAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD4GxnOAAHaLU5VAAAAAElFTkSuQmCC", "base64"),
+  });
+  await expect(page.getByText("Protected preview ready")).toBeVisible();
+  await expect(page.getByText(/Protected for @May Thiri/)).toBeVisible();
+  await expect(page.getByAltText("Dynamically watermarked listing preview")).toBeVisible();
+});

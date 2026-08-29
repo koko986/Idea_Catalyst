@@ -4,6 +4,7 @@ import { Home, MessageCircle, Package, Plus, ShieldCheck, Wallet } from "lucide-
 const links = [
   ["Marketplace", "/marketplace"],
   ["Sell", "/sell"],
+  ["Offers", "/offers"],
   ["Chat", "/chat"],
   ["Orders", "/orders"],
   ["Wallet", "/wallet"],
