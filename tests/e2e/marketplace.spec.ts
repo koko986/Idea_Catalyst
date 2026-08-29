@@ -27,7 +27,7 @@ test("buyer completes the protected marketplace journey", async ({ page }) => {
 
 test("admin queue exposes immutable evidence history", async ({ page }) => {
   await page.goto("/admin");
-  await page.getByRole("button", { name: "Open" }).first().click();
+  await page.getByRole("button", { name: "Open", exact: true }).first().click();
   await expect(page.getByText("Immutable audit timeline")).toBeVisible();
   await expect(page.getByText("Case created")).toBeVisible();
   await expect(page.getByText("Automated checks completed")).toBeVisible();
