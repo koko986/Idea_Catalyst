@@ -1,8 +1,5 @@
-import type { Metadata } from "next";
-import { ChatInbox } from "@/components/chat-view";
-
-export const metadata: Metadata = { title: "Chats" };
+import { redirect } from "next/navigation";
 
 export default function ChatPage() {
-  return <ChatInbox/>;
+  redirect("/marketplace?tab=seller");
 }

@@ -1,9 +1,10 @@
-import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { ChatThread } from "@/components/chat-view";
-
-export const metadata: Metadata = { title: "Chat" };
+import { parseListingThreadId } from "@/lib/chat";
 
 export default async function ChatThreadPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  return <ChatThread threadId={id}/>;
+  const listingId = parseListingThreadId(id);
+  if (listingId) redirect(`/marketplace/${listingId}?tab=seller`);
+  return <ChatThread threadId={id} backHref="/marketplace?tab=seller" backLabel="Seller chats"/>;
 }

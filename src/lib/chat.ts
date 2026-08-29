@@ -57,6 +57,14 @@ export function parseBuyerThreadId(id: string) {
   return id.startsWith("buyer-") ? id.slice("buyer-".length) : null;
 }
 
+export function conversationHref(conversation: Pick<Conversation, "id" | "listingId">) {
+  const listingId = parseListingThreadId(conversation.id) ?? conversation.listingId;
+  if (parseListingThreadId(conversation.id) && listingId) {
+    return `/marketplace/${listingId}?tab=seller`;
+  }
+  return `/marketplace?tab=seller&thread=${encodeURIComponent(conversation.id)}`;
+}
+
 export function sortConversations(items: Conversation[]) {
   return [...items].sort((left, right) => right.updatedAt.localeCompare(left.updatedAt));
 }

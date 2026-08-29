@@ -9,7 +9,6 @@ import {
   Gift,
   Home,
   Menu,
-  MessageCircle,
   Package,
   Plus,
   ShieldCheck,
@@ -18,7 +17,6 @@ import {
   Wallet,
   X,
 } from "lucide-react";
-import { useConversations } from "@/components/use-conversations";
 
 const primaryLinks = [
   ["Marketplace", "/marketplace"],
@@ -31,7 +29,6 @@ const primaryLinks = [
 ];
 
 const sideLinks = [
-  [MessageCircle, "Chat", "/chat"],
   [Tag, "Offers", "/offers"],
   [Package, "Orders", "/orders"],
   [Wallet, "Wallet", "/wallet"],
@@ -44,7 +41,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [openPath, setOpenPath] = useState<string | null>(null);
   const open = openPath === pathname;
-  const conversations = useConversations();
 
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
@@ -105,9 +101,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 <Link key={href + label} href={href} className={pathname === href || pathname.startsWith(`${href}/`) ? "active" : undefined} onClick={() => setOpenPath(null)}>
                   <Icon size={18}/>
                   <span>{label}</span>
-                  {label === "Chat" && conversations.length > 0 && (
-                    <span className="menu-count">{conversations.length}</span>
-                  )}
                 </Link>
               ))}
             </nav>

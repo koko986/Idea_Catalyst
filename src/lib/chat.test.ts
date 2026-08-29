@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   buyerThreadId,
+  conversationHref,
   draftThread,
   formatChatTime,
   lastPreview,
@@ -33,6 +34,8 @@ describe("protected chat history", () => {
     const buyer = draftThread(buyerThreadId("OF-103"), now);
     expect(buyer).toMatchObject({ id: "buyer-OF-103", peerName: "Nway Oo", peerInitials: "NO" });
     expect(draftThread("listing-missing")).toBeNull();
+    expect(conversationHref(seller!)).toBe("/marketplace/iphone-13?tab=seller");
+    expect(conversationHref(buyer!)).toBe("/marketplace?tab=seller&thread=buyer-OF-103");
   });
 
   it("does not keep a thread in history until someone sends a message", () => {
