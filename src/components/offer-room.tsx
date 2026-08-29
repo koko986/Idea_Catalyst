@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import Link from "next/link";
 import { BadgeCheck, CheckCircle2, Clock3, RefreshCcw, Tag, UserRoundCheck, XCircle } from "lucide-react";
 import { buyerThreadId } from "@/lib/chat";
 import { money } from "@/lib/data";
