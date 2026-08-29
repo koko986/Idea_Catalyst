@@ -3,7 +3,6 @@
 import { useState } from "react";
 import Link from "next/link";
 import { BadgeCheck, ShieldCheck } from "lucide-react";
-import { listingThreadId } from "@/lib/chat";
 import { money } from "@/lib/data";
 
 export function BuyPanel({ price, trial, listingId }: { price: number; trial: boolean; listingId: string }) {
@@ -22,7 +21,7 @@ export function BuyPanel({ price, trial, listingId }: { price: number; trial: bo
         </select>
       </div>}
       <button className="btn btn-primary" style={{width:"100%",marginTop:16}} onClick={()=>setNotice(`${money(price)} reserved securely. Checkout RT-NEW is ready.`)}>Secure in escrow</button>
-      <Link href={`/chat/${listingThreadId(listingId)}`} className="btn btn-quiet" style={{width:"100%",marginTop:8}}>Message seller</Link>
+      <Link href={`/marketplace/${listingId}?tab=seller`} className="btn btn-quiet" style={{width:"100%",marginTop:8}}>Message seller</Link>
       {notice && <div className="badge" style={{marginTop:14,borderRadius:10}}><BadgeCheck size={15}/>{notice}</div>}
       <p className="muted" style={{fontSize:12,lineHeight:1.5,margin:"16px 0 0"}}>A missing confirmation opens review. PyanThit never silently releases your funds.</p>
     </div>

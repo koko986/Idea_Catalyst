@@ -79,13 +79,16 @@ test("seller selection reopens waiting buyers after expiry or cancellation", asy
   await expect(kyaw.getByRole("button", { name: "Choose buyer" })).toBeVisible();
 });
 
-test("chat lives in the side menu and stays empty until someone is messaged", async ({ page }) => {
+test("chat lives on the marketplace seller tab and stays empty until someone is messaged", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByRole("navigation", { name: "Primary navigation" }).getByRole("link", { name: "Chat" })).toHaveCount(0);
   await expect(page.getByRole("navigation", { name: "Mobile navigation" }).getByRole("link", { name: "Chat" })).toHaveCount(0);
-
   await page.getByRole("button", { name: "Open menu" }).click();
-  await page.getByRole("navigation", { name: "Side menu" }).getByRole("link", { name: "Chat" }).click();
+  await expect(page.getByRole("navigation", { name: "Side menu" }).getByRole("link", { name: "Chat" })).toHaveCount(0);
+  await page.getByRole("button", { name: "Close menu" }).click();
+
+  await page.goto("/marketplace");
+  await page.getByRole("navigation", { name: "Marketplace sections" }).getByRole("link", { name: "Seller" }).click();
   await expect(page.getByRole("heading", { name: "No chats yet" })).toBeVisible();
 
   await page.goto("/marketplace/iphone-13");
@@ -95,7 +98,7 @@ test("chat lives in the side menu and stays empty until someone is messaged", as
   await page.getByRole("button", { name: "Send message" }).click();
   await expect(page.getByText("Is the battery health still 91%?")).toBeVisible();
 
-  await page.getByRole("link", { name: "Chats" }).click();
+  await page.goto("/marketplace?tab=seller");
   await expect(page.getByRole("heading", { name: "No chats yet" })).toHaveCount(0);
   await page.getByRole("link", { name: /May Thiri/ }).click();
   await expect(page.getByText("Is the battery health still 91%?")).toBeVisible();
