@@ -1,0 +1,4 @@
+# These values are intentionally public or non-sensitive and appear in the
+# generated Next.js output. Keep secret scanning enabled for all other keys.
+[build.environment]
+  SECRETS_SCAN_OMIT_KEYS = "NEXT_PUBLIC_SUPABASE_URL,NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,REWARD_PROVIDER"
