@@ -41,7 +41,7 @@ Accounts are real: an email and password create a stored account you can sign ba
 
 Anyone else can self-register from the login page under "Create an account". Override the `MVP_ADMIN_*` / `MVP_USER_*` values and set a random `MVP_SESSION_SECRET` in `.env.local`.
 
-Accounts are stored in `.data/accounts.json` (path configurable with `MVP_ACCOUNTS_FILE`), which persists for local and single-instance Node deployments but **not** on serverless hosts with ephemeral filesystems. Email addresses are never verified. Move to Supabase Auth or another managed provider, and add email verification and password recovery, before production.
+Accounts are stored in `.data/accounts.json` locally (path configurable with `MVP_ACCOUNTS_FILE`). On serverless hosts such as Netlify and Vercel the bundle is read-only, so the store automatically moves to the writable temp directory. The two seeded accounts above therefore always work on a deployed preview, but self-registered accounts live only as long as that instance, and email addresses are never verified. Move to Supabase Auth or another managed provider, and add email verification and password recovery, before production.
 
 To run Supabase locally:
 

@@ -2,6 +2,7 @@ import "server-only";
 
 import { randomBytes, randomUUID } from "node:crypto";
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
 import path from "node:path";
 import {
   DEMO_ADMIN_EMAIL,
@@ -28,9 +29,28 @@ export type Account = {
 
 export type CreateAccountResult = { account: Account } | { error: string };
 
-const storeFile = process.env.MVP_ACCOUNTS_FILE
-  ? path.resolve(process.env.MVP_ACCOUNTS_FILE)
-  : path.join(process.cwd(), ".data", "accounts.json");
+// Serverless hosts (Netlify, Vercel, Lambda) ship a read-only bundle, so the
+// repository directory cannot be written to. Only the temp dir is writable
+// there, which keeps the seeded accounts usable per instance.
+function resolveStoreFile() {
+  if (process.env.MVP_ACCOUNTS_FILE) {
+    return path.resolve(process.env.MVP_ACCOUNTS_FILE);
+  }
+
+  const readOnlyBundle = Boolean(
+    process.env.NETLIFY ||
+      process.env.VERCEL ||
+      process.env.AWS_LAMBDA_FUNCTION_NAME ||
+      process.env.LAMBDA_TASK_ROOT,
+  );
+
+  return readOnlyBundle
+    ? path.join(tmpdir(), "pyanthit-accounts.json")
+    : path.join(process.cwd(), ".data", "accounts.json");
+}
+
+let storeFile = resolveStoreFile();
+const fallbackStoreFile = path.join(tmpdir(), "pyanthit-accounts.json");
 
 const demoAccounts = [
   {
@@ -70,15 +90,26 @@ async function readAll(): Promise<Account[]> {
   }
 }
 
-async function writeAll(accounts: Account[]) {
-  await mkdir(path.dirname(storeFile), { recursive: true });
-  const temporary = `${storeFile}.${randomBytes(6).toString("hex")}`;
+async function writeTo(target: string, accounts: Account[]) {
+  await mkdir(path.dirname(target), { recursive: true });
+  const temporary = `${target}.${randomBytes(6).toString("hex")}`;
   await writeFile(
     temporary,
     `${JSON.stringify({ accounts }, null, 2)}\n`,
     "utf8",
   );
-  await rename(temporary, storeFile);
+  await rename(temporary, target);
+}
+
+async function writeAll(accounts: Account[]) {
+  try {
+    await writeTo(storeFile, accounts);
+  } catch (error) {
+    // A read-only or missing mount should not break sign-in entirely.
+    if (storeFile === fallbackStoreFile) throw error;
+    storeFile = fallbackStoreFile;
+    await writeTo(storeFile, accounts);
+  }
 }
 
 // Runs on every load so a missing or hand-edited store heals itself instead of
