@@ -120,9 +120,9 @@ def render_video(score: Path) -> None:
             "[4:v]format=yuv420p[finalbg]",
             "[5:v]scale=168:168,format=rgba[logo]",
             "[finalbg][logo]overlay=(W-w)/2:(H-h)/2-105[final]",
-            "[scene0][scene1]xfade=transition=fade:duration=1:offset=12[x1]",
-            "[x1][scene2]xfade=transition=fade:duration=1:offset=24[x2]",
-            "[x2][scene3]xfade=transition=fade:duration=1:offset=36[x3]",
+            "[scene0][scene1]xfade=transition=fadeblack:duration=1:offset=12[x1]",
+            "[x1][scene2]xfade=transition=fadeblack:duration=1:offset=24[x2]",
+            "[x2][scene3]xfade=transition=fadeblack:duration=1:offset=36[x3]",
             "[x3][final]xfade=transition=fadeblack:duration=1:offset=48[story]",
         ]
     )
