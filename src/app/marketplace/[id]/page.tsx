@@ -43,7 +43,7 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
             </div>
           </section>
         </div>
-        <BuyPanel price={item.price} trial={item.trial}/>
+        <BuyPanel price={item.price} trial={item.trial} listingId={item.id}/>
       </div>
     </main>
   );
