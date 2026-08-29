@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { AlertTriangle, BadgeCheck, CircleDollarSign, FileSearch, LockKeyhole, PackageCheck, ShieldCheck, Warehouse } from "lucide-react";
 import { money } from "@/lib/data";
 
@@ -30,6 +30,7 @@ const queues = {
 export function AdminConsole() {
   const [tab,setTab] = useState<keyof typeof queues>("identity");
   const [notice,setNotice] = useState("");
+  const [selected,setSelected] = useState<string | null>(null);
   const rows=queues[tab];
   return (
     <>
@@ -42,10 +43,21 @@ export function AdminConsole() {
       <section className="section">
         <div className="card">
           <div className="tabs">
-            {(["identity","wallet","disputes","logistics"] as const).map((item)=><button key={item} className={`tab ${tab===item?"active":""}`} onClick={()=>{setTab(item);setNotice("")}}>{item[0].toUpperCase()+item.slice(1)}</button>)}
+            {(["identity","wallet","disputes","logistics"] as const).map((item)=><button key={item} className={`tab ${tab===item?"active":""}`} onClick={()=>{setTab(item);setNotice("");setSelected(null)}}>{item[0].toUpperCase()+item.slice(1)}</button>)}
           </div>
           <div className="table-wrap"><table><thead><tr><th>Reference</th><th>Account / order</th><th>Signal</th><th>Status</th><th></th></tr></thead><tbody>
-            {rows.map(row=><tr key={row[0]}><td><strong>{row[0]}</strong></td><td>{row[1]}</td><td>{row[2]}</td><td><span className={String(row[3]).match(/duplicate|Urgent|resubmission/)?"badge badge-danger":"badge"}>{row[3]}</span></td><td><button className="btn btn-quiet" onClick={()=>setNotice(`${row[0]} opened with a complete audit timeline.`)}>Open</button></td></tr>)}
+            {rows.map(row=><Fragment key={row[0]}><tr><td><strong>{row[0]}</strong></td><td>{row[1]}</td><td>{row[2]}</td><td><span className={String(row[3]).match(/duplicate|Urgent|resubmission/)?"badge badge-danger":"badge"}>{row[3]}</span></td><td><button className="btn btn-quiet" onClick={()=>{setSelected(row[0]);setNotice(`${row[0]} opened with a complete audit timeline.`)}}>Open</button></td></tr>
+              {selected===row[0] && <tr><td colSpan={5}>
+                <section className="card" style={{margin:"4px 0",background:"var(--paper)",whiteSpace:"normal"}}>
+                  <div className="meta-row"><div><div className="eyebrow">Immutable audit timeline</div><h3 style={{margin:"7px 0 0"}}>{selected}</h3></div><button className="btn btn-quiet" onClick={()=>setSelected(null)}>Close</button></div>
+                  <div className="timeline" style={{marginTop:18}}>
+                    <div className="timeline-row"><span className="dot done"/><div><strong>Case created</strong><div className="muted">Applicant submitted consent and private evidence · 09:42</div></div></div>
+                    <div className="timeline-row"><span className="dot done"/><div><strong>Automated checks completed</strong><div className="muted">Photo quality, duplicate and consistency signals recorded · 09:43</div></div></div>
+                    <div className="timeline-row"><span className="dot"/><div><strong>Human decision required</strong><div className="muted">No automated signal can approve, reject, or release funds.</div></div></div>
+                  </div>
+                </section>
+              </td></tr>}
+            </Fragment>)}
           </tbody></table></div>
           {notice && <div className="trust-banner" style={{marginTop:16}}><BadgeCheck size={19}/>{notice}</div>}
         </div>

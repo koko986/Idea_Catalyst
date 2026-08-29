@@ -18,7 +18,7 @@ export const viewport: Viewport = { themeColor: "#145c3f", colorScheme: "light" 
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${geist.variable} ${mono.variable}`}>
+    <html lang="en" className={`${geist.variable} ${mono.variable}`} data-scroll-behavior="smooth">
       <body>
         <PwaRegister />
         <AppShell>{children}</AppShell>

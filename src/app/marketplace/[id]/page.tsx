@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import { BadgeCheck, BatteryCharging, Leaf, ScanSearch, ShieldCheck, Smartphone } from "lucide-react";
-import { listings, money } from "@/lib/data";
+import { listings } from "@/lib/data";
 import { BuyPanel } from "@/components/buy-panel";
 
 export function generateStaticParams() {

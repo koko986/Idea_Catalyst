@@ -44,8 +44,11 @@ Configure phone auth and an SMS provider in Supabase before testing real OTP del
 npm run lint
 npm run typecheck
 npm test
+npm run test:e2e
 npm run build
 ```
+
+Database policy tests live in `supabase/tests/database`. Run them with `npx supabase test db` while the local Supabase stack is running.
 
 ## Important production boundaries
 
