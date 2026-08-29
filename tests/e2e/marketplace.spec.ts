@@ -85,7 +85,7 @@ test("chat lives on the marketplace seller tab and stays empty until someone is 
   await expect(page.getByRole("navigation", { name: "Mobile navigation" }).getByRole("link", { name: "Chat" })).toHaveCount(0);
   await page.getByRole("button", { name: "Open menu" }).click();
   await expect(page.getByRole("navigation", { name: "Side menu" }).getByRole("link", { name: "Chat" })).toHaveCount(0);
-  await page.getByRole("button", { name: "Close menu" }).click();
+  await page.getByRole("dialog", { name: "Side menu" }).getByLabel("Close menu").click();
 
   await page.goto("/marketplace");
   await page.getByRole("navigation", { name: "Marketplace sections" }).getByRole("link", { name: "Seller" }).click();
