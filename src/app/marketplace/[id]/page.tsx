@@ -23,7 +23,7 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
           <p className="muted" style={{fontSize:18,lineHeight:1.6}}>Carefully used and fully tested. Original accessories are included. The exact pickup point stays private until a protected order begins.</p>
           <div className="grid grid-3" style={{marginTop:24}}>
             <div className="card"><ScanSearch className="iconbox" style={{padding:10}}/><h3 style={{marginTop:18}}>AI condition check</h3><p className="muted">93% visual consistency. No unlisted cracks detected.</p></div>
-            <div className="card"><Smartphone className="iconbox" style={{padding:10}}/><h3 style={{marginTop:18}}>IMEI screened</h3><p className="muted">Checksum valid, unique on ReTrust, registry review passed.</p></div>
+            <div className="card"><Smartphone className="iconbox" style={{padding:10}}/><h3 style={{marginTop:18}}>IMEI screened</h3><p className="muted">Checksum valid, unique on PyanThit, registry review passed.</p></div>
             <div className="card"><BatteryCharging className="iconbox" style={{padding:10}}/><h3 style={{marginTop:18}}>Function tested</h3><p className="muted">Camera, battery, display and connectivity evidence recorded.</p></div>
           </div>
           <section className="section">

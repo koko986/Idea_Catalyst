@@ -38,7 +38,7 @@ export async function POST(request: Request) {
   const input = Buffer.from(await file.arrayBuffer());
   const imageHash = await perceptualHash(input);
   const normalized = await sharp(input).rotate().resize({ width: 1600, withoutEnlargement: true }).toBuffer({ resolveWithObject: true });
-  const label = `ReTrust · @${sellerName} · ${date}`;
+  const label = `PyanThit · @${sellerName} · ${date}`;
   const overlay = Buffer.from(`
     <svg width="${normalized.info.width}" height="${normalized.info.height}" xmlns="http://www.w3.org/2000/svg">
       <style>.wm{font-family:Arial,sans-serif;font-weight:700;letter-spacing:1px;fill:white;stroke:rgba(0,0,0,.58);stroke-width:3px;paint-order:stroke}</style>
@@ -59,10 +59,10 @@ export async function POST(request: Request) {
   return new Response(new Uint8Array(watermarked), {
     headers: {
       "Content-Type": "image/webp",
-      "Content-Disposition": `inline; filename="retrust-${date}.webp"`,
-      "X-ReTrust-Seller": sellerName,
-      "X-ReTrust-Date": date,
-      "X-ReTrust-Perceptual-Hash": imageHash,
+      "Content-Disposition": `inline; filename="pyanthit-${date}.webp"`,
+      "X-PyanThit-Seller": sellerName,
+      "X-PyanThit-Date": date,
+      "X-PyanThit-Perceptual-Hash": imageHash,
       "Cache-Control": "private, no-store",
     },
   });

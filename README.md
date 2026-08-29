@@ -1,6 +1,6 @@
-# ReTrust
+# PyanThit
 
-A mobile-first, trust-centered second-hand marketplace PWA for Myanmar. ReTrust combines phone-bound identity, admin-assisted NRC verification, an auditable wallet/escrow ledger, evidence-backed delivery, guarded chat, QR handover, trial periods, disputes, partner logistics, and Eco-Points.
+A mobile-first, trust-centered second-hand marketplace PWA for Myanmar. PyanThit combines phone-bound identity, admin-assisted NRC verification, an auditable wallet/escrow ledger, evidence-backed delivery, guarded chat, QR handover, trial periods, disputes, partner logistics, and Eco-Points.
 
 ## What is implemented
 

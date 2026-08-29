@@ -34,7 +34,7 @@ button { cursor: pointer; }
   border-bottom: 1px solid rgba(223,229,220,.8);
 }
 .brand { display: flex; align-items: center; gap: 10px; font-weight: 900; letter-spacing: -.04em; font-size: 20px; }
-.brandmark { width: 34px; height: 34px; border-radius: 11px; display: grid; place-items: center; background: var(--brand); color: var(--brand-2); }
+.brandmark { width: 40px; height: 40px; object-fit: contain; border-radius: 10px; }
 .nav { display: flex; gap: 5px; align-items: center; }
 .nav a { padding: 9px 13px; border-radius: 99px; color: var(--muted); font-size: 14px; font-weight: 700; }
 .nav a:hover { color: var(--ink); background: #e9ede5; }
