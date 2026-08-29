@@ -56,8 +56,9 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
               {session.initials}
             </Link>
             <form action={logout}>
-              <button className="icon-button" type="submit" aria-label="Sign out">
-                <LogOut size={17} />
+              <button className="btn btn-quiet signout-button" type="submit">
+                <LogOut size={16} />
+                <span>Sign out</span>
               </button>
             </form>
           </div>

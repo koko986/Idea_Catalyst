@@ -40,8 +40,8 @@ button { cursor: pointer; }
 .nav a:hover { color: var(--ink); background: #e9ede5; }
 .avatar { width: 36px; height: 36px; display: grid; place-items: center; border-radius: 50%; background: var(--ink); color: white; font-weight: 800; }
 .account-actions { display:flex; align-items:center; gap:8px; }
-.icon-button { width:36px; height:36px; display:grid; place-items:center; border:1px solid var(--line); border-radius:50%; background:white; color:var(--muted); }
-.icon-button:hover { color:var(--danger); border-color:#efc8c4; }
+.signout-button { padding:9px 13px; font-size:13px; color:var(--muted); }
+.signout-button:hover { color:var(--danger); border-color:#efc8c4; }
 .page { width: min(1180px, 92vw); margin: 0 auto; padding: 42px 0 90px; }
 .eyebrow { text-transform: uppercase; letter-spacing: .14em; font-size: 12px; font-weight: 900; color: var(--brand); }
 h1,h2,h3,p { margin-top: 0; }
@@ -153,6 +153,8 @@ th { color:var(--muted); font-size:11px; letter-spacing:.08em; text-transform:up
 }
 @media(max-width:560px){
   .page { width:min(94vw, 1180px); padding-top:25px; }
+  .signout-button span { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); }
+  .signout-button { padding:9px 11px; }
   h1 { font-size:48px; }
   .hero { padding-top:10px; }
   .hero-art { min-height:330px; border-radius:24px; }
