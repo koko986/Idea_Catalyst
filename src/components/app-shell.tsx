@@ -20,6 +20,10 @@ import {
 } from "lucide-react";
 import { useConversations } from "@/components/use-conversations";
 
+function isActivePath(pathname: string, href: string) {
+  return href === "/" ? pathname === href : pathname === href || pathname.startsWith(`${href}/`);
+}
+
 const primaryLinks = [
   ["Marketplace", "/marketplace"],
   ["Sell", "/sell"],
@@ -68,7 +72,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <Link href="/" className="brand" aria-label="PyanThit home">
             <Image
               className="brandmark"
-              src="/pyanthit-icon.png"
+              src="/icons/icon-192.png"
               alt=""
               width={40}
               height={40}
@@ -78,7 +82,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </Link>
         </div>
         <nav className="nav" aria-label="Primary navigation">
-          {primaryLinks.map(([label, href]) => <Link key={href} href={href}>{label}</Link>)}
+          {primaryLinks.map(([label, href]) => (
+            <Link key={href} href={href} className={isActivePath(pathname, href) ? "active" : undefined} aria-current={isActivePath(pathname, href) ? "page" : undefined}>
+              {label}
+            </Link>
+          ))}
         </nav>
         <Link href="/profile" className="avatar" aria-label="Open profile">KT</Link>
       </header>
@@ -116,11 +124,18 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       )}
       {children}
       <nav className="bottom-nav" aria-label="Mobile navigation">
-        <Link href="/"><Home size={19}/><span>Home</span></Link>
-        <Link href="/marketplace"><Package size={19}/><span>Shop</span></Link>
-        <Link href="/sell"><Plus size={19}/><span>Sell</span></Link>
-        <Link href="/wallet"><Wallet size={19}/><span>Wallet</span></Link>
-        <Link href="/profile"><UserRound size={19}/><span>Account</span></Link>
+        {([
+          [Home, "Home", "/"],
+          [Package, "Shop", "/marketplace"],
+          [Plus, "Sell", "/sell"],
+          [Wallet, "Wallet", "/wallet"],
+          [UserRound, "Account", "/profile"],
+        ] as const).map(([Icon, label, href]) => (
+          <Link key={href} href={href} className={`${isActivePath(pathname, href) ? "active" : ""} ${href === "/sell" ? "bottom-nav-primary" : ""}`} aria-current={isActivePath(pathname, href) ? "page" : undefined}>
+            <Icon size={20}/>
+            <span>{label}</span>
+          </Link>
+        ))}
       </nav>
     </div>
   );
