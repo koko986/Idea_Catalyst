@@ -26,6 +26,7 @@ FONT_BOLD = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
 FONT_REGULAR = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
 SAMPLE_RATE = 48_000
 INTRO_DURATION = 5
+DEMO_OFFSET = INTRO_DURATION - 1
 
 
 def run(*command: str) -> None:
@@ -62,9 +63,9 @@ def timestamp(seconds: float) -> str:
 def write_captions(chapters: list[dict], end: float) -> None:
     lines = ["WEBVTT", ""]
     for index, chapter in enumerate(chapters):
-        cue_start = INTRO_DURATION + chapter["start"] + 0.25
+        cue_start = DEMO_OFFSET + chapter["start"] + 0.25
         next_start = chapters[index + 1]["start"] if index + 1 < len(chapters) else end
-        cue_end = INTRO_DURATION + next_start - 0.35
+        cue_end = DEMO_OFFSET + next_start - 0.35
         lines.extend(
             [
                 f"{timestamp(cue_start)} --> {timestamp(cue_end)}",
@@ -153,8 +154,8 @@ def render_full_demo(
         "fontcolor=white:fontsize=68:x=(w-text_w)/2:y=h*0.59,"
         f"drawtext=fontfile='{FONT_REGULAR}':text='FULL PRODUCT WALKTHROUGH':"
         "fontcolor=0xd8f25b:fontsize=25:x=(w-text_w)/2:y=h*0.69,"
-        "fade=t=in:st=0:d=0.6,fade=t=out:st=4.4:d=0.6[intro]",
-        "[intro][demo]concat=n=2:v=1:a=0[vout]",
+        "fade=t=in:st=0:d=0.6[intro]",
+        f"[intro][demo]xfade=transition=fadeblack:duration=1:offset={DEMO_OFFSET}[vout]",
     ]
 
     voice_labels = []
@@ -166,7 +167,7 @@ def render_full_demo(
         )
         clip_duration = duration(clip)
         tempo = max(1.0, clip_duration / max(available, 0.1))
-        delay = round((INTRO_DURATION + chapter["start"] + 0.2) * 1000)
+        delay = round((DEMO_OFFSET + chapter["start"] + 0.2) * 1000)
         input_index = 3 + index
         label = f"voice{index}"
         filters.append(
@@ -174,7 +175,7 @@ def render_full_demo(
         )
         voice_labels.append(f"[{label}]")
 
-    total_duration = INTRO_DURATION + duration(recording)
+    total_duration = DEMO_OFFSET + duration(recording)
     filters.append(
         f"[{score_index}:a]volume=0.30,afade=t=in:st=0:d=2,"
         f"afade=t=out:st={total_duration - 3:.2f}:d=3[score]"
@@ -257,7 +258,7 @@ def main() -> None:
         raise FileNotFoundError(recording_path)
 
     write_captions(chapters, end)
-    total_duration = math.ceil(INTRO_DURATION + duration(recording_path))
+    total_duration = math.ceil(DEMO_OFFSET + duration(recording_path))
     with tempfile.TemporaryDirectory(prefix="pyanthit-full-demo-") as temp:
         temp_dir = Path(temp)
         clips = asyncio.run(generate_narration(chapters, temp_dir))
