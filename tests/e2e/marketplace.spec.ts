@@ -150,6 +150,7 @@ test("buyer completes the protected marketplace journey", async ({ page }) => {
 });
 
 test("member funds the wallet before escrow checkout", async ({ page }) => {
+  await loginAsMember(page);
   const request = {
     id: "62f0df95-a609-4d4f-87a2-e2ab01ffbba1",
     requestNumber: "TP-001001",
@@ -187,6 +188,8 @@ test("member funds the wallet before escrow checkout", async ({ page }) => {
   await expect(page.getByText(/TP-001001 was submitted/)).toBeVisible();
   await expect(page.getByText("Pending review")).toBeVisible();
 
+  await page.getByRole("button", { name: "Sign out" }).click();
+  await loginAsAdmin(page);
   await page.route("**/api/admin/top-ups", async (route) => {
     await route.fulfill({
       status: 200,

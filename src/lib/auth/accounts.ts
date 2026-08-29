@@ -82,7 +82,10 @@ function serialize<T>(operation: () => Promise<T>): Promise<T> {
 
 async function readAll(): Promise<Account[]> {
   try {
-    const contents = await readFile(storeFile, "utf8");
+    const contents = await readFile(
+      /* turbopackIgnore: true */ storeFile,
+      "utf8",
+    );
     const parsed = JSON.parse(contents) as { accounts?: Account[] };
     return Array.isArray(parsed.accounts) ? parsed.accounts : [];
   } catch {
