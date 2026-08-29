@@ -41,6 +41,14 @@ npx supabase db reset
 
 Configure phone auth and an SMS provider in Supabase before testing real OTP delivery. Never place `SUPABASE_SECRET_KEY` in a `NEXT_PUBLIC_` variable.
 
+## Netlify deployment
+
+Set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` as
+regular Netlify environment variables. They are public browser configuration,
+not secrets. `netlify.toml` excludes those keys and the non-sensitive
+`REWARD_PROVIDER` label from Netlify's build-output secret scan while retaining
+scanning for server-only credentials such as `SUPABASE_SECRET_KEY`.
+
 ## Quality checks
 
 ```bash
