@@ -1,0 +1,5 @@
+# Public publishable keys are inlined into the Next.js client bundle.
+# Adapter names are not secrets; they must not match Netlify's secrets scan.
+[build.environment]
+  SECRETS_SCAN_OMIT_PATHS = ".env.example"
+  SECRETS_SCAN_OMIT_KEYS = "NEXT_PUBLIC_SUPABASE_URL,NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,LOCKER_PROVIDER,IMEI_REGISTRY_PROVIDER,REWARD_PROVIDER"

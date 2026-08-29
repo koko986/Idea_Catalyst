@@ -1,7 +1,100 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 import sharp from "sharp";
 
+const DEMO_USER = { email: "user@pyanthit.demo", password: "User123!" };
+const DEMO_ADMIN = { email: "admin@pyanthit.demo", password: "Admin123!" };
+
+async function loginAsMember(page: Page) {
+  await page.goto("/login");
+  await page.getByRole("button", { name: "Sign in as user" }).click();
+  await expect(page).toHaveURL(/\/marketplace$/);
+}
+
+async function loginAsAdmin(page: Page) {
+  await page.goto("/login");
+  await page.getByRole("tab", { name: "Admin" }).click();
+  await page.getByRole("button", { name: "Sign in as admin" }).click();
+  await expect(page).toHaveURL(/\/admin$/);
+}
+
+test("signing in requires a real account password", async ({ page }) => {
+  await page.goto("/marketplace");
+  await expect(page).toHaveURL(/\/login$/);
+  await expect(page.getByRole("tab", { name: "User" })).toBeVisible();
+  await expect(page.getByRole("tab", { name: "Admin" })).toBeVisible();
+
+  await page.getByLabel("Email address").fill("nobody@example.test");
+  await page.getByLabel("Password", { exact: true }).fill("WrongPassword1");
+  await page.getByRole("button", { name: "Sign in as user" }).click();
+  await expect(page.getByText(/is not recognised/)).toBeVisible();
+  await expect(page).toHaveURL(/\/login$/);
+
+  await page.getByLabel("Email address").fill(DEMO_USER.email);
+  await page.getByLabel("Password", { exact: true }).fill(DEMO_USER.password);
+  await page.getByRole("button", { name: "Sign in as user" }).click();
+  await expect(page).toHaveURL(/\/marketplace$/);
+
+  await page.goto("/admin");
+  await expect(page).toHaveURL(/\/marketplace$/);
+});
+
+test("a new account can be created and reused after signing out", async ({
+  page,
+}) => {
+  const email = `shopper.${Date.now()}@example.test`;
+
+  await page.goto("/login");
+  await page.getByRole("button", { name: "Create an account" }).click();
+  await page.getByLabel("Display name").fill("Nilar Aung");
+  await page.getByLabel("Email address").fill(email);
+  await page.getByLabel("Password", { exact: true }).fill("Str0ngPassword");
+  await page.getByLabel("Confirm password").fill("Str0ngPassword");
+  await page.getByRole("button", { name: "Create account" }).click();
+  await expect(page).toHaveURL(/\/marketplace$/);
+
+  await page.getByRole("button", { name: "Sign out" }).click();
+  await expect(page).toHaveURL(/\/login$/);
+
+  await page.getByLabel("Email address").fill(email);
+  await page.getByLabel("Password", { exact: true }).fill("Str0ngPassword");
+  await page.getByRole("button", { name: "Sign in as user" }).click();
+  await expect(page).toHaveURL(/\/marketplace$/);
+  await expect(page.getByRole("button", { name: /Account menu/ })).toContainText(
+    email,
+  );
+});
+
+test("a user account is refused administrator access", async ({ page }) => {
+  await page.goto("/login");
+  await page.getByRole("tab", { name: "Admin" }).click();
+  await page.getByLabel("Email address").fill(DEMO_USER.email);
+  await page.getByLabel("Password", { exact: true }).fill(DEMO_USER.password);
+  await page.getByRole("button", { name: "Sign in as admin" }).click();
+
+  await expect(
+    page.getByText(/does not have administrator access/),
+  ).toBeVisible();
+  await expect(page).toHaveURL(/\/login$/);
+});
+
+test("the account menu offers sign out and switch account", async ({ page }) => {
+  await loginAsAdmin(page);
+
+  await page.getByRole("button", { name: /Account menu/ }).click();
+  await expect(page.getByRole("menu")).toContainText(DEMO_ADMIN.email);
+  await expect(page.getByRole("menu")).toContainText("Administrator");
+  await expect(
+    page.getByRole("menuitem", { name: "Switch account" }),
+  ).toBeVisible();
+
+  await page.getByRole("menuitem", { name: "Sign out" }).click();
+  await expect(page).toHaveURL(/\/login$/);
+  await page.goto("/admin");
+  await expect(page).toHaveURL(/\/login$/);
+});
+
 test("buyer completes the protected marketplace journey", async ({ page }) => {
+  await loginAsMember(page);
   await page.goto("/marketplace");
   await expect(page.getByRole("heading", { name: /Find your next good thing/ })).toBeVisible();
   await page.getByRole("button", { name: "Phones" }).click();
@@ -26,6 +119,7 @@ test("buyer completes the protected marketplace journey", async ({ page }) => {
 });
 
 test("admin queue exposes immutable evidence history", async ({ page }) => {
+  await loginAsAdmin(page);
   await page.goto("/admin");
   await page.getByRole("button", { name: "Open", exact: true }).first().click();
   await expect(page.getByText("Immutable audit timeline")).toBeVisible();
@@ -35,6 +129,7 @@ test("admin queue exposes immutable evidence history", async ({ page }) => {
 });
 
 test("bilingual, attribute, and photo search narrow listings", async ({ page }) => {
+  await loginAsMember(page);
   await page.goto("/marketplace");
   const search = page.getByPlaceholder("Search in English or မြန်မာ Unicode…");
   await search.fill("ဖုန်း");
@@ -64,6 +159,7 @@ test("bilingual, attribute, and photo search narrow listings", async ({ page }) 
 });
 
 test("seller selection reopens waiting buyers after expiry or cancellation", async ({ page }) => {
+  await loginAsMember(page);
   await page.goto("/offers");
   const nway = page.locator("article").filter({ hasText: "Nway Oo" });
   await nway.getByRole("button", { name: "Choose buyer" }).click();
@@ -80,6 +176,7 @@ test("seller selection reopens waiting buyers after expiry or cancellation", asy
 });
 
 test("chat lives in the side menu and stays empty until someone is messaged", async ({ page }) => {
+  await loginAsMember(page);
   await page.goto("/");
   await expect(page.getByRole("navigation", { name: "Primary navigation" }).getByRole("link", { name: "Chat" })).toHaveCount(0);
   await expect(page.getByRole("navigation", { name: "Mobile navigation" }).getByRole("link", { name: "Chat" })).toHaveCount(0);
@@ -102,6 +199,7 @@ test("chat lives in the side menu and stays empty until someone is messaged", as
 });
 
 test("seller receives a dynamically watermarked photo derivative", async ({ page }) => {
+  await loginAsMember(page);
   const source = await sharp({ create: { width: 400, height: 300, channels: 3, background: "#4d7c5c" } }).png().toBuffer();
   await page.goto("/sell");
   await page.getByRole("button", { name: "2. Evidence" }).click();

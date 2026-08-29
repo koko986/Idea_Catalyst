@@ -8,6 +8,7 @@ import {
   BadgeCheck,
   Gift,
   Home,
+  LogOut,
   Menu,
   MessageCircle,
   Package,
@@ -18,7 +19,16 @@ import {
   Wallet,
   X,
 } from "lucide-react";
+import { logout } from "@/app/login/actions";
+import { AccountMenu } from "@/components/account-menu";
 import { useConversations } from "@/components/use-conversations";
+
+type ShellSession = {
+  email: string;
+  name: string;
+  initials: string;
+  role: "admin" | "member";
+};
 
 const primaryLinks = [
   ["Marketplace", "/marketplace"],
@@ -28,7 +38,7 @@ const primaryLinks = [
   ["Wallet", "/wallet"],
   ["Trust", "/trust"],
   ["Admin", "/admin"],
-];
+] as const;
 
 const sideLinks = [
   [MessageCircle, "Chat", "/chat"],
@@ -40,11 +50,23 @@ const sideLinks = [
   [UserRound, "Admin", "/admin"],
 ] as const;
 
-export function AppShell({ children }: { children: React.ReactNode }) {
+export function AppShell({
+  children,
+  session,
+}: {
+  children: React.ReactNode;
+  session: ShellSession | null;
+}) {
   const pathname = usePathname();
   const [openPath, setOpenPath] = useState<string | null>(null);
   const open = openPath === pathname;
   const conversations = useConversations();
+  const visiblePrimary = primaryLinks.filter(
+    ([label]) => label !== "Admin" || session?.role === "admin",
+  );
+  const visibleSide = sideLinks.filter(
+    ([, label]) => label !== "Admin" || session?.role === "admin",
+  );
 
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
@@ -62,9 +84,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     <div className="shell">
       <header className="topbar">
         <div className="topbar-left">
-          <button className="menu-toggle" type="button" aria-label="Open menu" aria-expanded={open} onClick={() => setOpenPath(pathname)}>
-            <Menu size={22}/>
-          </button>
+          {session && (
+            <button className="menu-toggle" type="button" aria-label="Open menu" aria-expanded={open} onClick={() => setOpenPath(pathname)}>
+              <Menu size={22}/>
+            </button>
+          )}
           <Link href="/" className="brand" aria-label="PyanThit home">
             <Image
               className="brandmark"
@@ -78,19 +102,40 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </Link>
         </div>
         <nav className="nav" aria-label="Primary navigation">
-          {primaryLinks.map(([label, href]) => <Link key={href} href={href}>{label}</Link>)}
+          {session &&
+            visiblePrimary.map(([label, href]) => (
+              <Link key={href} href={href}>{label}</Link>
+            ))}
         </nav>
-        <Link href="/profile" className="avatar" aria-label="Open profile">KT</Link>
+        {session ? (
+          <div className="account-actions">
+            <AccountMenu
+              email={session.email}
+              initials={session.initials}
+              roleLabel={session.role === "admin" ? "Administrator" : "User"}
+            />
+            <form action={logout}>
+              <button className="btn btn-quiet signout-button" type="submit">
+                <LogOut size={16} />
+                <span>Sign out</span>
+              </button>
+            </form>
+          </div>
+        ) : (
+          <Link href="/login" className="btn btn-quiet">
+            Sign in
+          </Link>
+        )}
       </header>
-      {open && (
+      {session && open && (
         <>
           <button className="drawer-backdrop" type="button" aria-label="Close menu" onClick={() => setOpenPath(null)}/>
           <aside className="drawer" role="dialog" aria-modal="true" aria-label="Side menu">
             <div className="drawer-head">
               <Link href="/profile" className="drawer-profile" onClick={() => setOpenPath(null)}>
-                <span className="avatar" style={{width:52,height:52}}>KT</span>
+                <span className="avatar" style={{width:52,height:52}}>{session.initials}</span>
                 <span>
-                  <strong>Kyaw Thu</strong>
+                  <strong>{session.name}</strong>
                   <span className="muted" style={{display:"flex",alignItems:"center",gap:4,marginTop:4}}>
                     <BadgeCheck size={14}/> View profile
                   </span>
@@ -101,7 +146,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               </button>
             </div>
             <nav className="drawer-nav" aria-label="Side menu">
-              {sideLinks.map(([Icon, label, href]) => (
+              {visibleSide.map(([Icon, label, href]) => (
                 <Link key={href + label} href={href} className={pathname === href || pathname.startsWith(`${href}/`) ? "active" : undefined} onClick={() => setOpenPath(null)}>
                   <Icon size={18}/>
                   <span>{label}</span>
@@ -110,18 +155,26 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   )}
                 </Link>
               ))}
+              <form action={logout}>
+                <button className="drawer-signout" type="submit">
+                  <LogOut size={18}/>
+                  <span>Sign out</span>
+                </button>
+              </form>
             </nav>
           </aside>
         </>
       )}
       {children}
-      <nav className="bottom-nav" aria-label="Mobile navigation">
-        <Link href="/"><Home size={19}/><span>Home</span></Link>
-        <Link href="/marketplace"><Package size={19}/><span>Shop</span></Link>
-        <Link href="/sell"><Plus size={19}/><span>Sell</span></Link>
-        <Link href="/wallet"><Wallet size={19}/><span>Wallet</span></Link>
-        <Link href="/profile"><UserRound size={19}/><span>Account</span></Link>
-      </nav>
+      {session && (
+        <nav className="bottom-nav" aria-label="Mobile navigation">
+          <Link href="/"><Home size={19}/><span>Home</span></Link>
+          <Link href="/marketplace"><Package size={19}/><span>Shop</span></Link>
+          <Link href="/sell"><Plus size={19}/><span>Sell</span></Link>
+          <Link href="/wallet"><Wallet size={19}/><span>Wallet</span></Link>
+          <Link href="/profile"><UserRound size={19}/><span>Account</span></Link>
+        </nav>
+      )}
     </div>
   );
 }
