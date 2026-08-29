@@ -15,7 +15,7 @@ create table public.top_up_requests (
   transfer_method text not null
     check (transfer_method in ('bank_transfer','kpay','wavepay','aya_pay')),
   transfer_reference text not null check (char_length(trim(transfer_reference)) between 4 and 80),
-  evidence_path text not null,
+  evidence_path text not null check (evidence_path like user_id::text || '/top-ups/%'),
   status public.top_up_status not null default 'pending',
   rejection_reason text check (rejection_reason is null or char_length(trim(rejection_reason)) between 3 and 500),
   reviewed_by uuid references auth.users(id),
@@ -40,6 +40,29 @@ create index top_up_pending_created on public.top_up_requests(created_at)
 create trigger top_up_requests_updated
   before update on public.top_up_requests
   for each row execute function private.updated_at();
+
+create or replace function private.enforce_top_up_transition()
+returns trigger language plpgsql set search_path = '' as $$
+begin
+  if old.status <> 'pending' or new.status not in ('approved','rejected','cancelled') then
+    raise exception 'invalid_top_up_transition';
+  end if;
+  if new.user_id is distinct from old.user_id
+    or new.amount_mmk is distinct from old.amount_mmk
+    or new.transfer_method is distinct from old.transfer_method
+    or new.transfer_reference is distinct from old.transfer_reference
+    or new.evidence_path is distinct from old.evidence_path
+    or new.request_number is distinct from old.request_number
+    or new.created_at is distinct from old.created_at then
+    raise exception 'top_up_identity_is_immutable';
+  end if;
+  return new;
+end;
+$$;
+
+create trigger top_up_requests_transition
+  before update on public.top_up_requests
+  for each row execute function private.enforce_top_up_transition();
 
 alter table public.top_up_requests enable row level security;
 create policy top_up_owner_read on public.top_up_requests for select to authenticated
@@ -321,6 +344,13 @@ grant execute on function public.checkout_and_hold(uuid,boolean,uuid) to authent
 
 revoke all on function private.prevent_ledger_mutation() from public, anon, authenticated;
 revoke all on function private.assert_balanced_entry() from public, anon, authenticated;
+revoke all on function private.enforce_top_up_transition() from public, anon, authenticated;
 revoke all on function private.wallet_available_balance(uuid) from public, anon, authenticated;
 revoke all on function private.wallet_held_balance(uuid) from public, anon, authenticated;
+revoke all on function private.approve_top_up(uuid) from public, anon;
+revoke all on function private.reject_top_up(uuid,text) from public, anon;
+revoke all on function private.checkout_and_hold(uuid,boolean,uuid) from public, anon;
+revoke all on function public.approve_top_up(uuid) from public, anon;
+revoke all on function public.reject_top_up(uuid,text) from public, anon;
+revoke all on function public.checkout_and_hold(uuid,boolean,uuid) from public, anon;
 revoke usage, select on sequence public.order_number_seq from public, anon, authenticated;
