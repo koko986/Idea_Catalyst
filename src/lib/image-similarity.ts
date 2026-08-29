@@ -17,9 +17,9 @@ export function hammingDistance(left: string, right: string) {
   if (!/^[0-9a-f]{16}$/i.test(left) || !/^[0-9a-f]{16}$/i.test(right)) return Number.POSITIVE_INFINITY;
   let value = BigInt(`0x${left}`) ^ BigInt(`0x${right}`);
   let distance = 0;
-  while (value) {
-    distance += Number(value & 1n);
-    value >>= 1n;
+  while (value !== BigInt(0)) {
+    distance += Number(value & BigInt(1));
+    value >>= BigInt(1);
   }
   return distance;
 }
