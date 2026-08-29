@@ -1,5 +1,8 @@
-import { ChatView } from "@/components/chat-view";
+import type { Metadata } from "next";
+import { ChatInbox } from "@/components/chat-view";
+
+export const metadata: Metadata = { title: "Chats" };
 
 export default function ChatPage() {
-  return <main className="page"><div className="eyebrow">Protected chat</div><h1 style={{fontSize:"clamp(40px,6vw,68px)"}}>Talk freely.<br/>Deal safely.</h1><ChatView/></main>;
+  return <ChatInbox/>;
 }
