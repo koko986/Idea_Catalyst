@@ -1,11 +1,11 @@
 import Link from "next/link";
+import Image from "next/image";
 import {
   Home,
   LogOut,
   MessageCircle,
   Package,
   Plus,
-  ShieldCheck,
   Wallet,
 } from "lucide-react";
 import { logout } from "@/app/login/actions";
@@ -31,9 +31,16 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="shell">
       <header className="topbar">
-        <Link href="/" className="brand" aria-label="ReTrust home">
-          <span className="brandmark"><ShieldCheck size={19} /></span>
-          ReTrust
+        <Link href="/" className="brand" aria-label="PyanThit home">
+          <Image
+            className="brandmark"
+            src="/pyanthit-icon.png"
+            alt=""
+            width={40}
+            height={40}
+            priority
+          />
+          PyanThit
         </Link>
         <nav className="nav" aria-label="Primary navigation">
           {session &&
