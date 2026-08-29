@@ -32,8 +32,14 @@ export function WalletView({ suggestedAmount = 0 }: { suggestedAmount?: number }
   }, []);
 
   useEffect(() => {
-    void loadWallet();
-  }, [loadWallet]);
+    let active = true;
+    void fetch("/api/wallet", { cache: "no-store" }).then(async (response) => {
+      if (!response.ok || !active) return;
+      setWallet(await response.json() as WalletSnapshot);
+      setLive(true);
+    });
+    return () => { active = false; };
+  }, []);
 
   async function submitTopUp(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();

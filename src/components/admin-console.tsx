@@ -33,8 +33,14 @@ function AdminTopUpQueue({ onNotice }: { onNotice: (notice: string) => void }) {
   }, []);
 
   useEffect(() => {
-    void loadQueue();
-  }, [loadQueue]);
+    let active = true;
+    void fetch("/api/admin/top-ups", { cache: "no-store" }).then(async (response) => {
+      if (!response.ok || !active) return;
+      const result = await response.json() as { requests: AdminTopUp[] };
+      setRequests(result.requests);
+    });
+    return () => { active = false; };
+  }, []);
 
   async function review(id: string, action: "approve" | "reject") {
     if (action === "approve" && !window.confirm("Approve this receipt and credit the member wallet?")) return;

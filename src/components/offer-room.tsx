@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { BadgeCheck, CheckCircle2, Clock3, RefreshCcw, Tag, UserRoundCheck, XCircle } from "lucide-react";
 import { money } from "@/lib/data";
 import {
@@ -100,7 +101,7 @@ export function OfferRoom() {
               <button className="btn btn-quiet" style={{width:"100%",marginTop:8}} onClick={()=>cancel("buyer")}><XCircle size={16}/> Buyer cancels</button>
               <button className="btn btn-danger" style={{width:"100%",marginTop:8}} onClick={()=>cancel("seller")}>Seller cancels</button>
             </>}
-            {selected.status==="confirmed" && <a href="/orders" className="btn btn-primary" style={{width:"100%"}}>Open protected order</a>}
+            {selected.status==="confirmed" && <Link href="/orders" className="btn btn-primary" style={{width:"100%"}}>Open protected order</Link>}
           </> : <><h3 style={{fontSize:25,margin:"10px 0 6px"}}>No buyer selected</h3><p className="muted">All active buyers can still negotiate. Choose one when you are ready.</p></>}
         </div>
         <div className="card" style={{marginTop:16}}><h3>Fair selection loop</h3><p className="muted">If the chosen buyer declines, cancels, or misses 24 hours, waiting offers automatically become available. The seller can then choose again.</p></div>
