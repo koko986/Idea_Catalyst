@@ -4,3 +4,6 @@
 
 [build.environment]
   NODE_VERSION = "22"
+  # Public browser config is inlined into the Next.js output. Keep scanning
+  # enabled for server-only credentials such as SUPABASE_SECRET_KEY.
+  SECRETS_SCAN_OMIT_KEYS = "NEXT_PUBLIC_SUPABASE_URL,NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,REWARD_PROVIDER"
