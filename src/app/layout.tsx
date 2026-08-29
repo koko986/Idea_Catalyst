@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Noto_Sans_Myanmar } from "next/font/google";
 import "./globals.css";
 import { AppShell } from "@/components/app-shell";
+import { PwaInstall } from "@/components/pwa-install";
 import { PwaRegister } from "@/components/pwa-register";
 import { getSession } from "@/lib/auth/session";
 
@@ -14,8 +15,11 @@ export const metadata: Metadata = {
   description: "Myanmar's trust-first marketplace with verified people, protected chat, and escrow.",
   manifest: "/manifest.webmanifest",
   icons: {
-    icon: [{ url: "/pyanthit-icon.png", type: "image/png", sizes: "512x512" }],
-    apple: [{ url: "/pyanthit-icon.png", type: "image/png", sizes: "512x512" }],
+    icon: [
+      { url: "/icons/icon-192.png", type: "image/png", sizes: "192x192" },
+      { url: "/icons/icon-512.png", type: "image/png", sizes: "512x512" },
+    ],
+    apple: [{ url: "/icons/apple-touch-icon.png", type: "image/png", sizes: "180x180" }],
   },
   appleWebApp: { capable: true, statusBarStyle: "default", title: "PyanThit" },
 };
@@ -30,6 +34,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
       <body>
         <PwaRegister />
         <AppShell session={session}>{children}</AppShell>
+        <PwaInstall />
       </body>
     </html>
   );

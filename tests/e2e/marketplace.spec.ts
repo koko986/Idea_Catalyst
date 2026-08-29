@@ -93,6 +93,37 @@ test("the account menu offers sign out and switch account", async ({ page }) => 
   await expect(page).toHaveURL(/\/login$/);
 });
 
+test("phone layout stays within the viewport and exposes app navigation", async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== "mobile-chrome", "Phone-only responsive check");
+  await loginAsMember(page);
+
+  for (const path of ["/", "/marketplace", "/offers", "/chat"]) {
+    await page.goto(path);
+    const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+    expect(overflow, `${path} should not overflow horizontally`).toBeLessThanOrEqual(1);
+  }
+
+  const mobileNav = page.getByRole("navigation", { name: "Mobile navigation" });
+  await expect(mobileNav).toBeVisible();
+  await mobileNav.getByRole("link", { name: "Shop" }).click();
+  await expect(mobileNav.getByRole("link", { name: "Shop" })).toHaveAttribute("aria-current", "page");
+});
+
+test("web app manifest exposes installable mobile assets", async ({ request }) => {
+  const response = await request.get("/manifest.webmanifest");
+  expect(response.ok()).toBeTruthy();
+  const manifest = await response.json();
+  expect(manifest.display).toBe("standalone");
+  expect(manifest.icons).toEqual(expect.arrayContaining([
+    expect.objectContaining({ sizes: "192x192" }),
+    expect.objectContaining({ sizes: "512x512", purpose: "maskable" }),
+  ]));
+
+  for (const icon of ["/icons/icon-192.png", "/icons/icon-512.png", "/icons/apple-touch-icon.png"]) {
+    expect((await request.get(icon)).ok(), `${icon} should be available`).toBeTruthy();
+  }
+});
+
 test("buyer completes the protected marketplace journey", async ({ page }) => {
   await loginAsMember(page);
   await page.goto("/marketplace");

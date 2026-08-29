@@ -30,6 +30,10 @@ type ShellSession = {
   role: "admin" | "member";
 };
 
+function isActivePath(pathname: string, href: string) {
+  return href === "/" ? pathname === href : pathname === href || pathname.startsWith(`${href}/`);
+}
+
 const primaryLinks = [
   ["Marketplace", "/marketplace"],
   ["Sell", "/sell"],
@@ -92,7 +96,7 @@ export function AppShell({
           <Link href="/" className="brand" aria-label="PyanThit home">
             <Image
               className="brandmark"
-              src="/pyanthit-icon.png"
+              src="/icons/icon-192.png"
               alt=""
               width={40}
               height={40}
@@ -104,7 +108,14 @@ export function AppShell({
         <nav className="nav" aria-label="Primary navigation">
           {session &&
             visiblePrimary.map(([label, href]) => (
-              <Link key={href} href={href}>{label}</Link>
+              <Link
+                key={href}
+                href={href}
+                className={isActivePath(pathname, href) ? "active" : undefined}
+                aria-current={isActivePath(pathname, href) ? "page" : undefined}
+              >
+                {label}
+              </Link>
             ))}
         </nav>
         {session ? (
@@ -168,11 +179,23 @@ export function AppShell({
       {children}
       {session && (
         <nav className="bottom-nav" aria-label="Mobile navigation">
-          <Link href="/"><Home size={19}/><span>Home</span></Link>
-          <Link href="/marketplace"><Package size={19}/><span>Shop</span></Link>
-          <Link href="/sell"><Plus size={19}/><span>Sell</span></Link>
-          <Link href="/wallet"><Wallet size={19}/><span>Wallet</span></Link>
-          <Link href="/profile"><UserRound size={19}/><span>Account</span></Link>
+          {([
+            [Home, "Home", "/"],
+            [Package, "Shop", "/marketplace"],
+            [Plus, "Sell", "/sell"],
+            [Wallet, "Wallet", "/wallet"],
+            [UserRound, "Account", "/profile"],
+          ] as const).map(([Icon, label, href]) => (
+            <Link
+              key={href}
+              href={href}
+              className={`${isActivePath(pathname, href) ? "active" : ""} ${href === "/sell" ? "bottom-nav-primary" : ""}`}
+              aria-current={isActivePath(pathname, href) ? "page" : undefined}
+            >
+              <Icon size={20}/>
+              <span>{label}</span>
+            </Link>
+          ))}
         </nav>
       )}
     </div>
