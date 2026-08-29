@@ -189,6 +189,7 @@ test("member funds the wallet before escrow checkout", async ({ page }) => {
   await expect(page.getByText("Pending review")).toBeVisible();
 
   await page.getByRole("button", { name: "Sign out" }).click();
+  await expect(page).toHaveURL(/\/login$/);
   await loginAsAdmin(page);
   await page.route("**/api/admin/top-ups", async (route) => {
     await route.fulfill({
