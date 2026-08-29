@@ -1,5 +1,5 @@
-const CACHE = "retrust-shell-v1";
-const SHELL = ["/", "/marketplace", "/wallet", "/trust", "/icon.svg"];
+const CACHE = "pyanthit-shell-v1";
+const SHELL = ["/", "/marketplace", "/wallet", "/trust", "/pyanthit-icon.png"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(SHELL)));

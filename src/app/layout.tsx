@@ -9,10 +9,14 @@ const mono = Geist_Mono({ subsets: ["latin"], variable: "--font-geist-mono" });
 const myanmar = Noto_Sans_Myanmar({ subsets: ["myanmar"], variable: "--font-myanmar" });
 
 export const metadata: Metadata = {
-  title: { default: "ReTrust — Buy second-hand with confidence", template: "%s · ReTrust" },
+  title: { default: "PyanThit — Buy second-hand with confidence", template: "%s · PyanThit" },
   description: "Myanmar's trust-first marketplace with verified people, protected chat, and escrow.",
   manifest: "/manifest.webmanifest",
-  appleWebApp: { capable: true, statusBarStyle: "default", title: "ReTrust" },
+  icons: {
+    icon: [{ url: "/pyanthit-icon.png", type: "image/png", sizes: "512x512" }],
+    apple: [{ url: "/pyanthit-icon.png", type: "image/png", sizes: "512x512" }],
+  },
+  appleWebApp: { capable: true, statusBarStyle: "default", title: "PyanThit" },
 };
 
 export const viewport: Viewport = { themeColor: "#145c3f", colorScheme: "light" };

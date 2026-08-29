@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { Home, MessageCircle, Package, Plus, ShieldCheck, Wallet } from "lucide-react";
+import Image from "next/image";
+import { Home, MessageCircle, Package, Plus, Wallet } from "lucide-react";
 
 const links = [
   ["Marketplace", "/marketplace"],
@@ -16,9 +17,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="shell">
       <header className="topbar">
-        <Link href="/" className="brand" aria-label="ReTrust home">
-          <span className="brandmark"><ShieldCheck size={19} /></span>
-          ReTrust
+        <Link href="/" className="brand" aria-label="PyanThit home">
+          <Image
+            className="brandmark"
+            src="/pyanthit-icon.png"
+            alt=""
+            width={40}
+            height={40}
+            priority
+          />
+          PyanThit
         </Link>
         <nav className="nav" aria-label="Primary navigation">
           {links.map(([label, href]) => <Link key={href} href={href}>{label}</Link>)}

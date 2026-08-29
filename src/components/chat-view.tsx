@@ -29,7 +29,7 @@ export function ChatView() {
         <div className="messages">
           <div className="trust-banner"><ShieldCheck size={20}/><div><strong>Protected conversation</strong><div className="muted">May Thiri · identity + phone verified</div></div></div>
           {messages.map((message,index)=><div key={index} className={`bubble ${message.mine?"mine":""}`} style={message.blocked?{background:"var(--danger)"}:{}}>{message.text}</div>)}
-          {warning && <div className="warning"><AlertTriangle size={18}/><span><strong>Message blocked.</strong> {warning}. Keep payment and contact inside ReTrust.</span></div>}
+          {warning && <div className="warning"><AlertTriangle size={18}/><span><strong>Message blocked.</strong> {warning}. Keep payment and contact inside PyanThit.</span></div>}
         </div>
         <form onSubmit={send} style={{display:"grid",gridTemplateColumns:"1fr auto",gap:8,paddingTop:12,borderTop:"1px solid var(--line)"}}>
           <input className="input" value={text} onChange={(e)=>setText(e.target.value)} placeholder="Message safely…"/>

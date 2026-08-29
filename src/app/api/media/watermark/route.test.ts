@@ -13,9 +13,9 @@ describe("dynamic listing watermark", () => {
     const metadata = await sharp(output).metadata();
     expect(response.status).toBe(200);
     expect(response.headers.get("content-type")).toBe("image/webp");
-    expect(response.headers.get("x-retrust-seller")).toBe("May Thiri");
-    expect(response.headers.get("x-retrust-date")).toMatch(/^\d{4}-\d{2}-\d{2}$/);
-    expect(response.headers.get("x-retrust-perceptual-hash")).toMatch(/^[0-9a-f]{16}$/);
+    expect(response.headers.get("x-pyanthit-seller")).toBe("May Thiri");
+    expect(response.headers.get("x-pyanthit-date")).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    expect(response.headers.get("x-pyanthit-perceptual-hash")).toMatch(/^[0-9a-f]{16}$/);
     expect(metadata.format).toBe("webp");
   });
 });
