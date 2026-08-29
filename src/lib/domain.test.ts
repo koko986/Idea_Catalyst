@@ -15,14 +15,14 @@ describe("double-entry wallet", () => {
   it("accepts balanced integer postings", () => {
     const entry = createEntry({
       id: "topup-1", kind: "top_up", reference: "TP-1",
-      postings: [{ account: "platform_clearing", amount: -500_000 }, { account: "buyer_available", amount: 500_000 }],
+      postings: [{ account: "platform_clearing", amount: -500_000 }, { account: "user_available", amount: 500_000 }],
     });
     expect(entry.postings.reduce((sum, item) => sum + item.amount, 0)).toBe(0);
   });
   it("rejects unbalanced entries", () => {
     expect(() => createEntry({
       id: "bad", kind: "hold", reference: "H-1",
-      postings: [{ account: "buyer_available", amount: -100 }, { account: "buyer_held", amount: 99 }],
+      postings: [{ account: "user_available", amount: -100 }, { account: "order_escrow", amount: 99 }],
     })).toThrow("not balanced");
   });
 });
