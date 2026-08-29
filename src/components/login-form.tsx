@@ -7,6 +7,7 @@ import {
   KeyRound,
   Mail,
   ShieldCheck,
+  UserRound,
   UserRoundCog,
 } from "lucide-react";
 import { login, type LoginState } from "@/app/login/actions";
@@ -30,31 +31,36 @@ export function LoginForm({
       <div className="iconbox">
         {mode === "admin" ? <UserRoundCog size={21} /> : <Mail size={21} />}
       </div>
-      <h2 style={{ marginTop: 18 }}>Sign in to ReTrust</h2>
+      <h2 style={{ marginTop: 18 }}>Sign in to PyanThit</h2>
       <p className="muted">
         {mode === "member"
           ? "Use any made-up email address. No message is sent and no real inbox is needed."
           : "Use the single demo administrator account below."}
       </p>
 
-      <div className="tabs" role="tablist" aria-label="Account type">
+      <span className="field-legend">Choose how you want to sign in</span>
+      <div className="role-switch" role="tablist" aria-label="Account type">
         <button
-          className={`tab ${mode === "member" ? "active" : ""}`}
+          className={`role-option ${mode === "member" ? "active" : ""}`}
           type="button"
           role="tab"
           aria-selected={mode === "member"}
           onClick={() => setMode("member")}
         >
-          Member
+          <UserRound size={19} />
+          <strong>User</strong>
+          <span>Any email</span>
         </button>
         <button
-          className={`tab ${mode === "admin" ? "active" : ""}`}
+          className={`role-option ${mode === "admin" ? "active" : ""}`}
           type="button"
           role="tab"
           aria-selected={mode === "admin"}
           onClick={() => setMode("admin")}
         >
-          Admin
+          <UserRoundCog size={19} />
+          <strong>Admin</strong>
+          <span>Demo account</span>
         </button>
       </div>
 
@@ -117,7 +123,11 @@ export function LoginForm({
           type="submit"
           disabled={pending}
         >
-          {pending ? "Signing in…" : "Continue"}
+          {pending
+            ? "Signing in…"
+            : mode === "admin"
+              ? "Sign in as admin"
+              : "Sign in as user"}
           {!pending && <ArrowRight size={16} />}
         </button>
       </form>

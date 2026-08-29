@@ -4,14 +4,14 @@ import sharp from "sharp";
 async function loginAsMember(page: Page) {
   await page.goto("/login");
   await page.getByLabel("Email address").fill("buyer@example.test");
-  await page.getByRole("button", { name: "Continue" }).click();
+  await page.getByRole("button", { name: "Sign in as user" }).click();
   await expect(page).toHaveURL(/\/marketplace$/);
 }
 
 async function loginAsAdmin(page: Page) {
   await page.goto("/login");
   await page.getByRole("tab", { name: "Admin" }).click();
-  await page.getByRole("button", { name: "Continue" }).click();
+  await page.getByRole("button", { name: "Sign in as admin" }).click();
   await expect(page).toHaveURL(/\/admin$/);
 }
 
@@ -21,13 +21,29 @@ test("MVP login requires a session and accepts a made-up email", async ({
   await page.goto("/marketplace");
   await expect(page).toHaveURL(/\/login$/);
   await expect(page.getByText(/No message is sent/)).toBeVisible();
+  await expect(page.getByRole("tab", { name: "User" })).toBeVisible();
+  await expect(page.getByRole("tab", { name: "Admin" })).toBeVisible();
 
   await page.getByLabel("Email address").fill("demo.user@example.test");
-  await page.getByRole("button", { name: "Continue" }).click();
+  await page.getByRole("button", { name: "Sign in as user" }).click();
   await expect(page).toHaveURL(/\/marketplace$/);
 
   await page.goto("/admin");
   await expect(page).toHaveURL(/\/marketplace$/);
+});
+
+test("admin credentials appear only after choosing the Admin role", async ({
+  page,
+}) => {
+  await page.goto("/login");
+  await expect(page.getByText("Demo admin account")).toHaveCount(0);
+
+  await page.getByRole("tab", { name: "Admin" }).click();
+  await expect(page.getByText("Demo admin account")).toBeVisible();
+  await expect(page.getByText("admin@retrust.demo")).toBeVisible();
+
+  await page.getByRole("tab", { name: "User" }).click();
+  await expect(page.getByText("Demo admin account")).toHaveCount(0);
 });
 
 test("buyer completes the protected marketplace journey", async ({ page }) => {

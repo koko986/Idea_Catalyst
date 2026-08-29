@@ -100,8 +100,15 @@ h3 { letter-spacing: -.025em; }
 .input:focus { border-color:var(--brand); box-shadow:0 0 0 3px rgba(20,92,63,.1); }
 .login-page { min-height:calc(100vh - 70px); display:grid; align-content:center; padding-top:30px; }
 .login-card { width:min(470px,100%); margin:18px auto 30px; padding:26px; }
-.login-card .tabs { margin-top:22px; }
 .login-card form .btn { width:100%; margin-top:5px; }
+.field-legend { display:block; margin:22px 0 9px; font-size:13px; font-weight:850; }
+.role-switch { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:20px; }
+.role-option { display:grid; justify-items:start; gap:2px; padding:14px; border:1.5px solid var(--line); border-radius:14px; background:white; color:var(--muted); text-align:left; transition:.18s; }
+.role-option strong { color:var(--ink); font-size:15px; }
+.role-option span { font-size:12px; }
+.role-option:hover { border-color:#b6c7b8; background:#fafbf8; }
+.role-option.active { border-color:var(--brand); background:#eff7ec; color:var(--brand); box-shadow:0 0 0 3px rgba(20,92,63,.1); }
+.role-option.active strong { color:var(--brand); }
 .input-with-icon { position:relative; }
 .input-with-icon > svg { position:absolute; left:14px; top:50%; z-index:1; color:var(--muted); transform:translateY(-50%); pointer-events:none; }
 .input-with-icon .input { padding-left:42px; }
