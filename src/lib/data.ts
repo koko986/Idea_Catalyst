@@ -43,7 +43,7 @@ export const listings: Listing[] = [
     title: "Fujifilm X100V",
     price: 3250000,
     category: "Cameras",
-    condition: "Like new",
+    condition: "Like New",
     location: "Near Myanmar Plaza",
     image: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=1200&q=80",
     seller: "Htet Aung",

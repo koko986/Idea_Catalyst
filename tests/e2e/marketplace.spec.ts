@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import sharp from "sharp";
 
 test("buyer completes the protected marketplace journey", async ({ page }) => {
   await page.goto("/marketplace");
@@ -74,16 +75,18 @@ test("seller selection reopens waiting buyers after expiry or cancellation", asy
   await min.getByRole("button", { name: "Choose buyer" }).click();
   await page.getByRole("button", { name: "Buyer cancels" }).click();
   await expect(page.getByText(/cancelled by buyer/)).toBeVisible();
-  await expect(nway.getByRole("button", { name: "Choose buyer" })).toBeVisible();
+  const kyaw = page.locator("article").filter({ hasText: "Kyaw Thu" });
+  await expect(kyaw.getByRole("button", { name: "Choose buyer" })).toBeVisible();
 });
 
 test("seller receives a dynamically watermarked photo derivative", async ({ page }) => {
+  const source = await sharp({ create: { width: 400, height: 300, channels: 3, background: "#4d7c5c" } }).png().toBuffer();
   await page.goto("/sell");
   await page.getByRole("button", { name: "2. Evidence" }).click();
   await page.locator('input[type="file"]').setInputFiles({
     name: "phone.png",
     mimeType: "image/png",
-    buffer: Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAZAAAAEsCAIAAACbnn2RAAADHUlEQVR4nO3BAQ0AAADCoPdPbQ43oAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD4GxnOAAHaLU5VAAAAAElFTkSuQmCC", "base64"),
+    buffer: source,
   });
   await expect(page.getByText("Protected preview ready")).toBeVisible();
   await expect(page.getByText(/Protected for @May Thiri/)).toBeVisible();

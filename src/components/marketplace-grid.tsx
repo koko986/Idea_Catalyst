@@ -55,10 +55,10 @@ export function MarketplaceGrid() {
       </div>
       {visualStatus && <div className="trust-banner" style={{marginTop:12}}><Camera size={19}/><span style={{flex:1}}>{visualStatus}</span>{visualIds&&<button className="btn btn-quiet" onClick={()=>{setVisualIds(null);setVisualStatus("")}} aria-label="Clear photo search"><X size={15}/></button>}</div>}
       {showFilters && <div className="card advanced-filters">
-        <div className="field"><label>Condition tier</label><select className="input" value={filters.condition} onChange={(e)=>setFilter("condition",e.target.value)}><option>All</option><option>Brand New</option><option>Like New</option><option>Lightly Used</option><option>Needs Repair/Upcycling</option></select></div>
-        <div className="field"><label>Transaction type</label><select className="input" value={filters.transactionType} onChange={(e)=>setFilter("transactionType",e.target.value)}><option>All</option><option>Escrow Delivery</option><option>SafeZone Locker Pickup</option><option>Direct Meetup</option><option>Free / Give-away</option></select></div>
-        <div className="field"><label>Seller credibility</label><select className="input" value={filters.credibility} onChange={(e)=>setFilter("credibility",e.target.value)}><option>All</option><option>Verified Neighbor</option><option>Top-Rated Sellers</option><option>High Response Rate (&lt;15 mins)</option></select></div>
-        <div className="field"><label>Price & bargain</label><select className="input" value={filters.pricingTier} onChange={(e)=>setFilter("pricingTier",e.target.value)}><option>All</option><option>Fixed Price</option><option>Open to Offers</option><option>Price Dropped Recently</option></select></div>
+        <div className="field"><label htmlFor="condition-filter">Condition tier</label><select id="condition-filter" className="input" value={filters.condition} onChange={(e)=>setFilter("condition",e.target.value)}><option>All</option><option>Brand New</option><option>Like New</option><option>Lightly Used</option><option>Needs Repair/Upcycling</option></select></div>
+        <div className="field"><label htmlFor="transaction-filter">Transaction type</label><select id="transaction-filter" className="input" value={filters.transactionType} onChange={(e)=>setFilter("transactionType",e.target.value)}><option>All</option><option>Escrow Delivery</option><option>SafeZone Locker Pickup</option><option>Direct Meetup</option><option>Free / Give-away</option></select></div>
+        <div className="field"><label htmlFor="credibility-filter">Seller credibility</label><select id="credibility-filter" className="input" value={filters.credibility} onChange={(e)=>setFilter("credibility",e.target.value)}><option>All</option><option>Verified Neighbor</option><option>Top-Rated Sellers</option><option>High Response Rate (&lt;15 mins)</option></select></div>
+        <div className="field"><label htmlFor="pricing-filter">Price & bargain</label><select id="pricing-filter" className="input" value={filters.pricingTier} onChange={(e)=>setFilter("pricingTier",e.target.value)}><option>All</option><option>Fixed Price</option><option>Open to Offers</option><option>Price Dropped Recently</option></select></div>
       </div>}
       <div className="filters">
         {categories.map((item) => <button key={item} className={`filter ${category===item?"active":""}`} onClick={()=>setCategory(item)}>{item}</button>)}
@@ -67,7 +67,7 @@ export function MarketplaceGrid() {
         {results.map((item) => (
           <Link href={`/marketplace/${item.id}`} className="card product" key={item.id}>
             <div style={{position:"relative"}}>
-              <Image className="product-img" src={item.image} alt={item.title} width={700} height={520}/>
+              <Image className="product-img" src={item.image} alt={item.title} width={700} height={520} loading={item.id==="iphone-13"?"eager":"lazy"}/>
               <span style={{position:"absolute",right:12,bottom:12}} className="badge">© {item.seller} · Aug 2026</span>
             </div>
             <div className="product-body">
