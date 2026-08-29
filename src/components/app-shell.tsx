@@ -87,7 +87,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <button className="drawer-backdrop" type="button" aria-label="Close menu" onClick={() => setOpenPath(null)}/>
           <aside className="drawer" role="dialog" aria-modal="true" aria-label="Side menu">
             <div className="drawer-head">
-              <Link href="/profile" className="drawer-profile">
+              <Link href="/profile" className="drawer-profile" onClick={() => setOpenPath(null)}>
                 <span className="avatar" style={{width:52,height:52}}>KT</span>
                 <span>
                   <strong>Kyaw Thu</strong>
@@ -102,7 +102,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </div>
             <nav className="drawer-nav" aria-label="Side menu">
               {sideLinks.map(([Icon, label, href]) => (
-                <Link key={href + label} href={href} className={pathname === href || pathname.startsWith(`${href}/`) ? "active" : undefined}>
+                <Link key={href + label} href={href} className={pathname === href || pathname.startsWith(`${href}/`) ? "active" : undefined} onClick={() => setOpenPath(null)}>
                   <Icon size={18}/>
                   <span>{label}</span>
                   {label === "Chat" && conversations.length > 0 && (
