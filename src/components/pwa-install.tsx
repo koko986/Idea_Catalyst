@@ -24,8 +24,12 @@ export function PwaInstall() {
     if (isStandalone() || window.localStorage.getItem(DISMISS_KEY)) return;
 
     const ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
-    setShowIosHelp(ios);
-    setVisible(ios);
+    const frame = ios
+      ? window.requestAnimationFrame(() => {
+          setShowIosHelp(true);
+          setVisible(true);
+        })
+      : null;
 
     function onBeforeInstall(event: Event) {
       event.preventDefault();
@@ -41,6 +45,7 @@ export function PwaInstall() {
     window.addEventListener("beforeinstallprompt", onBeforeInstall);
     window.addEventListener("appinstalled", onInstalled);
     return () => {
+      if (frame !== null) window.cancelAnimationFrame(frame);
       window.removeEventListener("beforeinstallprompt", onBeforeInstall);
       window.removeEventListener("appinstalled", onInstalled);
     };
